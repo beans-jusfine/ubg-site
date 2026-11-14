@@ -12,3 +12,11 @@ Connect this GitHub repository in Cloudflare Pages. Every push to main will trig
 
 ## Game catalog
 Edit `games.js` to add game metadata. The current sample cards are catalog placeholders; they are not playable until you add legitimate hosted HTML5 game URLs and a player integration.
+
+## Site asset folders
+- `assets/games/` — game cover art / thumbnails. Replace `PLACEHOLDER.svg` with your image files and update each game's `image` field in `games.js`.
+- `assets/apps/` — app/service icons for the apps grid.
+- `assets/branding/` — site logo and favicon.
+- `assets/backgrounds/` — optional page backgrounds.
+
+Recommended game cover size: **512 × 512 px** (square). Use WebP or optimized PNG/JPG for photos/art. Keep filenames lowercase and update the matching path in `games.js`.
