@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090909">
+<title>Novene Games</title><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="backdrop"></div>
+<header class="tabs"><div class="leafbrand">◆ <b>novene</b></div><button class="tab active" data-page="home">◆ new tab</button><button class="tab" data-page="games">◆ novene games</button><button class="tab" data-page="apps">◆ novene apps</button><div class="user">● guest</div></header>
+<div class="browser"><button>‹</button><button>›</button><button>↻</button><div class="url"><span>⌕</span><span id="route">novene://home</span></div></div>
+<aside class="sidebar"><button class="side active" data-page="home" title="Home">⌂</button><button class="side" data-page="games" title="Games">♧</button><button class="side" data-page="discover" title="Discover">✧</button><button class="side" data-page="apps" title="Apps">▦</button><div class="grow"></div><button class="side" data-page="recent" title="Recently played">◷</button><button class="side" data-page="favorites" title="Favorites">♡</button><button class="side" data-page="settings" title="Settings">⚙</button></aside>
+<main>
+<section class="page home" id="homePage"><div class="center"><h1><span>◆</span> novene</h1><label class="home-search"><span>⌕</span><input id="homeSearch" placeholder="Search games..." autocomplete="off"></label><div class="shortcuts"><button data-page="games">browse games</button><button data-page="apps">explore apps</button></div></div><a class="discord" href="https://discord.com" target="_blank" rel="noreferrer">◉　discord</a></section>
+<section class="page content hidden" id="gamesPage"><div class="heading"><div><h2>games</h2><p>your next favorite game is one click away</p></div><small id="gameCount"></small></div><div class="tools"><label class="search"><span>⌕</span><input id="gameSearch" placeholder="Search games..." autocomplete="off"></label><select id="category"><option value="all">all games</option><option value="arcade">arcade</option><option value="racing">racing</option><option value="puzzle">puzzle</option><option value="sports">sports</option></select></div><div class="chips"><button class="chip active" data-cat="all">all</button><button class="chip" data-cat="arcade">arcade</button><button class="chip" data-cat="racing">racing</button><button class="chip" data-cat="puzzle">puzzle</button><button class="chip" data-cat="sports">sports</button></div><div class="grid" id="games"></div></section>
+<section class="page content hidden" id="appsPage"><div class="heading"><div><h2>apps</h2><p>tools and utilities</p></div></div><div class="grid apps">
+<a class="app-card" href="https://nowgg.fun" target="_blank"><div class="appicon green">R</div><b>Roblox</b><small>nowgg.fun</small></a>
+<a class="app-card" href="https://youtube.com" target="_blank"><div class="appicon red">▶</div><b>YouTube</b><small>youtube.com</small></a>
+<a class="app-card" href="https://tiktok.com" target="_blank"><div class="appicon black">♪</div><b>TikTok</b><small>tiktok.com</small></a>
+<a class="app-card" href="https://reddit.com" target="_blank"><div class="appicon orange">●</div><b>Reddit</b><small>reddit.com</small></a>
+<a class="app-card" href="https://github.com" target="_blank"><div class="appicon light">⌘</div><b>GitHub</b><small>github.com</small></a>
+<a class="app-card" href="https://discord.com" target="_blank"><div class="appicon blue">◉</div><b>Discord</b><small>discord.com</small></a>
+</div></section>
+<section class="page content hidden" id="discoverPage"><div class="heading"><div><h2>discover</h2><p>find something new to play</p></div></div><p class="muted">New games and collections coming soon.</p></section>
+<section class="page content hidden" id="recentPage"><div class="heading"><div><h2>recently played</h2><p>pick up where you left off</p></div></div><div class="grid" id="recent"></div></section>
+<section class="page content hidden" id="favoritesPage"><div class="heading"><div><h2>favorites</h2><p>your saved games</p></div></div><div class="grid" id="favorites"></div></section>
+<section class="page content hidden" id="settingsPage"><div class="heading"><div><h2>settings</h2><p>make Novene yours</p></div></div><div class="settings"><b>Appearance</b><p>Dark mode is enabled.</p><b>About</b><p>Novene Games · a lightweight game hub.</p></div></section>
+</main>
+<div class="modal hidden" id="modal"><div class="modalbox"><div class="modalhead"><div><b id="modalTitle">Game</b><small id="modalCat"></small></div><button id="close">×</button></div><div id="player" class="player"><div><div class="spark">✧</div><h3>Game slot ready</h3><p id="modalInfo">Add a playable HTML5 game URL in games.js to enable this game.</p></div></div></div></div>
+<script src="games.js"></script><script src="app.js"></script>
+</body></html>
