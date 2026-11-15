@@ -244,30 +244,35 @@ wispShow();
 window.FERNLIGHT={get wispUrl(){return getWisp()}};
 
 /* scramjet over wisp */
-let proxyReady=null,proxyConn=null,sj=null;
+let proxyReady=null,controller=null,EpoxyClientClass=null;
+const proxyFrames=new Map();
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Missing file '+src+'. Did you run the setup and upload the public folder?'));document.head.appendChild(s)})}
 function initProxy(){if(proxyReady)return proxyReady;
 proxyReady=(async()=>{
 const w=getWisp();
 if(isPlaceholder(w)||!/^wss:\/\//i.test(w))throw new Error('Set a valid wss:// Wisp address in Settings first');
 if(!('serviceWorker' in navigator))throw new Error('Service workers need https (or localhost)');
-if(!window.BareMux)await loadScript('/baremux/index.js');
-if(!window.$scramjetLoadController)await loadScript('/scram/scramjet.all.js');
-const {ScramjetController}=$scramjetLoadController();
-sj=new ScramjetController({prefix:'/scramjet/',files:{wasm:'/scram/scramjet.wasm.wasm',all:'/scram/scramjet.all.js',sync:'/scram/scramjet.sync.js'}});
-await sj.init();
 const reg=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});
 await navigator.serviceWorker.ready;
 if(!navigator.serviceWorker.controller){
 await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));
 }
-proxyConn=new BareMux.BareMuxConnection('/baremux/worker.js');
-await proxyConn.setTransport('/epoxy/index.mjs',[{wisp:w}]);
+const serviceworker=navigator.serviceWorker.controller||reg.active;
+if(!serviceworker)throw new Error('Scramjet service worker did not become active');
+for(const src of ['/scram/scramjet.js','/controller/controller.api.js','/utils/scramjet-utils.js'])await loadScript(src);
+const api=window.$scramjetController;
+if(!api||!api.Controller)throw new Error('Scramjet 2.x controller failed to load');
+const epoxy=await import('/epoxy/index.mjs');
+EpoxyClientClass=epoxy.default||epoxy.EpoxyClient;
+if(!EpoxyClientClass)throw new Error('Scramjet 2.x Epoxy transport failed to load');
+controller=new api.Controller({serviceworker,transport:new EpoxyClientClass({wisp:w}),config:{prefix:'/scramjet/',scramjetPath:'/scram/scramjet.js',wasmPath:'/scram/scramjet.wasm',injectPath:'/controller/controller.inject.js'}});
+await controller.wait();
+setInterval(()=>navigator.serviceWorker.controller?.postMessage('keepalive'),15000);
 })();
 proxyReady.catch(()=>{proxyReady=null});
 return proxyReady}
 const _wc=$('#wisp').onchange;
-$('#wisp').onchange=e=>{_wc(e);if(proxyConn)proxyConn.setTransport('/epoxy/index.mjs',[{wisp:getWisp()}]).catch(()=>{})};
+$('#wisp').onchange=e=>{_wc(e);if(controller&&EpoxyClientClass)controller.setTransport(new EpoxyClientClass({wisp:getWisp()}))};
 
 /* ai chat */
 const chat=$('#chat'),ain=$('#ai-in');let aiBusy=false;
@@ -288,8 +293,8 @@ const names={home:'new tab',games:'games',apps:'apps',ai:'ai',settings:'settings
 let tabs=[],cur=0,nid=0;
 const cT=()=>tabs.find(x=>x.id===cur);
 function newTab(v){v=v||'home';const t={id:++nid,v,src:'',u:'',title:names[v]};tabs.push(t);cur=t.id;draw()}
-function nav(v){const t=cT(),f=$('#f'+t.id);if(f)f.remove();t.v=v;t.src='';t.u='';t.title=names[v];draw()}
-function closeTab(id){const i=tabs.findIndex(t=>t.id===id),f=$('#f'+id);if(f)f.remove();tabs.splice(i,1);if(!tabs.length)return newTab();if(cur===id)cur=tabs[Math.max(0,i-1)].id;draw()}
+function nav(v){const t=cT(),f=$('#f'+t.id);if(f)f.remove();proxyFrames.delete(t.id);t.v=v;t.src='';t.u='';t.title=names[v];draw()}
+function closeTab(id){const i=tabs.findIndex(t=>t.id===id),f=$('#f'+id);if(f)f.remove();proxyFrames.delete(id);tabs.splice(i,1);if(!tabs.length)return newTab();if(cur===id)cur=tabs[Math.max(0,i-1)].id;draw()}
 function draw(){const t=cT();show(t.v);
 $$('#sites iframe').forEach(f=>f.style.display=f.id==='f'+t.id?'block':'none');
 $('#url').value=t.v==='site'?t.src:'fernlight://'+t.v;
@@ -300,12 +305,14 @@ k.onclick=e=>{e.stopPropagation();closeTab(x.id)};b.onclick=()=>{cur=x.id;draw()
 function norm(v){v=v.trim();if(/^https?:\/\//i.test(v))return v;return(/\s/.test(v)||!v.includes('.'))?eng(v):'https://'+v}
 function toast(m){const e=$('#toast');e.textContent=m;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',10000)}
 function ext(u){const w=window.open(u,'_blank');if(w)w.opener=null;else toast('Pop-up blocked. Copy this link and open it: '+u)}
-function siteTab(u,v){let t=cT();if(t.v!=='home'&&t.v!=='site'){newTab();t=cT()}
+function siteTab(v){let t=cT();if(t.v!=='home'&&t.v!=='site'){newTab();t=cT()}
 let h=v;try{h=new URL(v).hostname.replace(/^www\./,'')}catch(e){}
-t.v='site';t.src=v;t.u=u;t.title=h;let f=$('#f'+t.id);if(!f){f=document.createElement('iframe');f.id='f'+t.id;f.className='sf';$('#sites').appendChild(f);if(sj)sj.createFrame(f)}f.title=h;f.src=u;draw()}
+t.v='site';t.src=v;t.u=v;t.title=h;let f=$('#f'+t.id),frame=proxyFrames.get(t.id);
+if(!f){f=document.createElement('iframe');f.id='f'+t.id;f.className='sf';$('#sites').appendChild(f);frame=controller.createFrame(f);proxyFrames.set(t.id,frame)}
+f.title=h;frame.go(v);draw()}
 function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;const m=raw.match(/^fernlight:\/\/(\w+)/);if(m&&names[m[1]])return nav(m[1]);
 const v=norm(raw);
-initProxy().then(()=>siteTab(sj.encodeUrl(v),v)).catch(e=>toast(e.message))}
+initProxy().then(()=>siteTab(v)).catch(e=>toast(e.message))}
 $('#newtab').onclick=()=>newTab();
 $('#ext').onclick=()=>{const t=cT();if(t&&t.u)ext(t.u)};
 $('#url').onfocus=e=>e.target.select();$('#url').onkeydown=e=>{if(e.key==='Enter')openUrl(e.target.value)};
