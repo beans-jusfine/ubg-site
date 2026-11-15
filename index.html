@@ -256,8 +256,11 @@ if(!window.$scramjetLoadController)await loadScript('/scram/scramjet.all.js');
 const {ScramjetController}=$scramjetLoadController();
 sj=new ScramjetController({prefix:'/scramjet/',files:{wasm:'/scram/scramjet.wasm.wasm',all:'/scram/scramjet.all.js',sync:'/scram/scramjet.sync.js'}});
 await sj.init();
-const reg=await navigator.serviceWorker.register('/sw.js');
-if(!reg.active){const sw=reg.installing||reg.waiting;if(sw)await new Promise(r=>{if(sw.state==='activated')return r();sw.addEventListener('statechange',()=>{if(sw.state==='activated')r()})})}
+const reg=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});
+await navigator.serviceWorker.ready;
+if(!navigator.serviceWorker.controller){
+await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));
+}
 proxyConn=new BareMux.BareMuxConnection('/baremux/worker.js');
 await proxyConn.setTransport('/epoxy/index.mjs',[{wisp:w}]);
 })();
