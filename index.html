@@ -195,8 +195,8 @@ button.btn:active,button.ghost:active{transform:scale(.95)}
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 /* ===== CONFIG: replace these two values with your real URLs ===== */
-const WISP_URL='wss://YOUR-APP.onrender.com/wisp/';
-const AI_URL='https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev';
+const WISP_URL='wss://ubg-site-wisp.onrender.com/wisp/';
+const AI_URL='https://ubg-ai-fl.jason294022.workers.dev/';
 const isPlaceholder=u=>/YOUR-/.test(u);
 function show(v){$$('.view').forEach(e=>e.classList.toggle('on',e.id===v));$$('nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
 $$('nav button[data-v]').forEach(b=>b.onclick=()=>nav(b.dataset.v));
