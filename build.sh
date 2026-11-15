@@ -5,7 +5,10 @@ set -euo pipefail
 rm -rf .scramjet-source .scramjet-build
 git clone --depth 1 https://github.com/beans-jusfine/ubg-site-sj.git .scramjet-source
 npm install --prefix .scramjet-source
-OUT_DIR=../.scramjet-build npm run setup --prefix .scramjet-source
+(
+  cd .scramjet-source
+  OUT_DIR=../.scramjet-build npm run setup
+)
 
 # These files must be served from Fernlight's own origin so /sw.js can control the site.
 cp -R .scramjet-build/scram .
