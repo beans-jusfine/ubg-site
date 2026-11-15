@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fernlight – games hub</title>
+<title>NERO</title>
 <style>
 :root{--bg:#050505;--panel:#0e0e0e;--line:#1f1f1f;--text:#f2f2f2;--mute:#7d7d7d;--acc:#e8e8e8;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 :root[data-mode=green]{--acc:#4ade80}:root[data-mode=blue]{--acc:#60a5fa}:root[data-mode=red]{--acc:#f87171}
@@ -141,7 +141,7 @@ button.btn:active,button.ghost:active{transform:scale(.95)}
 <aside id="vtabs"></aside>
 <main>
 <section class="view on" id="home">
-<div class="hero"><h1>fernlight</h1>
+<div class="hero"><h1>NERO</h1>
 <input class="search" id="hs" placeholder="Search with Brave…" aria-label="Search with Brave" autofocus>
 </div>
 </section>
@@ -260,7 +260,7 @@ await navigator.serviceWorker.ready;
 let serviceworker=navigator.serviceWorker.controller||reg.active;
 if(!serviceworker){
 await new Promise((resolve,reject)=>{
-const timer=setTimeout(()=>reject(new Error('Scramjet service worker did not activate. Reload Fernlight and try again.')),10000);
+const timer=setTimeout(()=>reject(new Error('Scramjet service worker did not activate. Reload NERO and try again.')),10000);
 navigator.serviceWorker.addEventListener('controllerchange',()=>{clearTimeout(timer);resolve()},{once:true});
 });
 serviceworker=navigator.serviceWorker.controller||reg.active;
@@ -304,7 +304,7 @@ function nav(v){const t=cT(),f=$('#f'+t.id);if(f)f.remove();proxyFrames.delete(t
 function closeTab(id){const i=tabs.findIndex(t=>t.id===id),f=$('#f'+id);if(f)f.remove();proxyFrames.delete(id);tabs.splice(i,1);if(!tabs.length)return newTab();if(cur===id)cur=tabs[Math.max(0,i-1)].id;draw()}
 function draw(){const t=cT();show(t.v);
 $$('#sites iframe').forEach(f=>f.style.display=f.id==='f'+t.id?'block':'none');
-$('#url').value=t.v==='site'?t.src:'fernlight://'+t.v;
+$('#url').value=t.v==='site'?t.src:'nero://'+t.v;
 const bar=$('#tabs');bar.innerHTML='';
 tabs.forEach(x=>{const b=document.createElement('div');b.className='tab'+(x.id===cur?' on':'');b.setAttribute('role','tab');b.tabIndex=0;
 const s=document.createElement('span');s.textContent=x.title;const k=document.createElement('button');k.textContent='×';k.setAttribute('aria-label','Close tab');
@@ -317,7 +317,7 @@ let h=v;try{h=new URL(v).hostname.replace(/^www\./,'')}catch(e){}
 t.v='site';t.src=v;t.u=v;t.title=h;let f=$('#f'+t.id),frame=proxyFrames.get(t.id);
 if(!f){f=document.createElement('iframe');f.id='f'+t.id;f.className='sf';$('#sites').appendChild(f);frame=controller.createFrame(f);proxyFrames.set(t.id,frame)}
 f.title=h;frame.go(v);draw()}
-function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;const m=raw.match(/^fernlight:\/\/(\w+)/);if(m&&names[m[1]])return nav(m[1]);
+function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;const m=raw.match(/^nero:\/\/(\w+)/);if(m&&names[m[1]])return nav(m[1]);
 const v=norm(raw);
 initProxy().then(()=>siteTab(v)).catch(e=>toast(e.message))}
 $('#newtab').onclick=()=>newTab();
