@@ -196,7 +196,7 @@ const WISP_URL='wss://ubg-site-wisp.onrender.com/wisp/';
 const AI_URL='https://ubg-ai-fl.jason294022.workers.dev/';
 const isPlaceholder=u=>/YOUR-/.test(u);
 function show(v){$$('.view').forEach(e=>e.classList.toggle('on',e.id===(v==='games'?'games-view':v)));$$('nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
-$('nav button[data-v]').forEach(b=>b.onclick=()=>nav(b.dataset.v));
+$$('nav button[data-v]').forEach(b=>b.onclick=()=>nav(b.dataset.v));
 
 /* settings */
 function save(k,v){try{localStorage.setItem(k,v)}catch(e){}}
@@ -347,7 +347,7 @@ tabsH:`<rect x='3' y='4' width='18' height='16' rx='3'/><path d='M3 9h18M6.5 6.5
 tabsV:`<rect x='3' y='4' width='18' height='16' rx='3'/><path d='M9 4v16M5.5 8h.01'/>`,
 ai:`<path d='M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z'/><path d='M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z'/>`};
 const ico=(k,s=30)=>`<svg viewBox='0 0 24 24' width='${s}' height='${s}' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>${ICON[k]||''}</svg>`;
-$('nav button[data-v]').forEach(b=>b.innerHTML=ico(b.dataset.v,20));
+$$('nav button[data-v]').forEach(b=>b.innerHTML=ico(b.dataset.v,20));
 $$('[data-i]').forEach(e=>e.innerHTML=ico(e.dataset.i,24));
 const apps=[['YouTube','youtube.com','yt'],['Reddit','reddit.com','reddit'],['GitHub','github.com','gh'],['Twitch','twitch.tv','twitch'],['Wikipedia','wikipedia.org','wiki'],['Spotify','open.spotify.com','spotify'],['Discord','discord.com','discord'],['Google','google.com','google']];
 apps.forEach((a,i)=>{const b=document.createElement('button');b.className='card';b.style.setProperty('--i',i);b.innerHTML=`<div class="ic">${ico(a[2])}</div>${a[0]}<small>${a[1]}</small>`;b.onclick=()=>openUrl('https://'+a[1]);$('#ag').appendChild(b)});
