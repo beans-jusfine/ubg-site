@@ -145,11 +145,8 @@ button.btn:active,button.ghost:active{transform:scale(.95)}
 <input class="search" id="hs" placeholder="Search with Brave…" aria-label="Search with Brave" autofocus>
 </div>
 </section>
-<section class="view" id="games">
-<h1>games</h1><p class="sub">pick something to play</p>
-<div class="bar"><select id="cat" aria-label="Category"><option>all</option><option>arcade</option><option>puzzle</option></select>
-<input class="search" id="gs" placeholder="search games…" aria-label="Search games"><span class="sub" id="cnt" style="margin:0"></span></div>
-<div class="grid" id="gg"></div>
+<section class="view" id="games-view">
+<div id="games"></div>
 </section>
 <section class="view" id="apps">
 <h1>apps</h1><p class="sub">tools and utilities</p>
@@ -198,7 +195,7 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const WISP_URL='wss://ubg-site-wisp.onrender.com/wisp/';
 const AI_URL='https://ubg-ai-fl.jason294022.workers.dev/';
 const isPlaceholder=u=>/YOUR-/.test(u);
-function show(v){$$('.view').forEach(e=>e.classList.toggle('on',e.id===v));$$('nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
+function show(v){$('.view').forEach(e=>e.classList.toggle('on',e.id===(v==='games'?'games-view':v)));$('nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
 $$('nav button[data-v]').forEach(b=>b.onclick=()=>nav(b.dataset.v));
 
 /* settings */
@@ -355,20 +352,7 @@ $$('[data-i]').forEach(e=>e.innerHTML=ico(e.dataset.i,24));
 const apps=[['YouTube','youtube.com','yt'],['Reddit','reddit.com','reddit'],['GitHub','github.com','gh'],['Twitch','twitch.tv','twitch'],['Wikipedia','wikipedia.org','wiki'],['Spotify','open.spotify.com','spotify'],['Discord','discord.com','discord'],['Google','google.com','google']];
 apps.forEach((a,i)=>{const b=document.createElement('button');b.className='card';b.style.setProperty('--i',i);b.innerHTML=`<div class="ic">${ico(a[2])}</div>${a[0]}<small>${a[1]}</small>`;b.onclick=()=>openUrl('https://'+a[1]);$('#ag').appendChild(b)});
 
-/* games list */
-const games=[
-{n:'Snake',c:'arcade',i:'snake',f:snake,h:'Arrow keys or swipe'},
-{n:'Flappy Hop',c:'arcade',i:'flappy',f:flappy,h:'Space, click or tap to hop'},
-{n:'Memory Match',c:'puzzle',i:'memory',f:memory,h:'Find all the pairs'},
-{n:'Reaction Test',c:'puzzle',i:'bolt',f:reaction,h:'Click when the box turns green'}];
-function render(){const q=$('#gs').value.toLowerCase(),c=$('#cat').value;
-const l=games.filter(g=>(c==='all'||g.c===c)&&g.n.toLowerCase().includes(q));
-$('#cnt').textContent=l.length+' games';
-$('#gg').innerHTML=l.length?'':'<p class="sub">No games match. Try another search.</p>';
-l.forEach((g,i)=>{const b=document.createElement('button');b.className='card';b.style.setProperty('--i',i);b.innerHTML=`<div class="ic">${ico(g.i)}</div>${g.n}<small>${g.c}</small>`;b.onclick=()=>play(g);$('#gg').appendChild(b)})}
-$('#gs').oninput=render;$('#cat').onchange=render;
 $('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(eng(q),true)};
-render();
 
 /* player */
 let stop=null;
@@ -424,6 +408,14 @@ let t0,to,ready=false;function start(){ready=false;b.style.background='#7f1d1d';
 b.onclick=()=>{if(ready){b.style.background='';b.textContent=Math.round(performance.now()-t0)+' ms – click to retry';ready=false;b.dataset.s='1'}
 else if(b.dataset.s){b.dataset.s='';start()}else{clearTimeout(to);b.style.background='';b.textContent='Too early – click to retry';b.dataset.s='1'}};
 start();return()=>clearTimeout(to)}
+</script>
+
+<script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"></script>
+<script>
+Lumin.init({
+  container: '#games',
+  theme: 'dark'
+});
 </script>
 </body>
 </html>
