@@ -196,7 +196,7 @@ const WISP_URL='wss://ubg-site-wisp.onrender.com/wisp/';
 const AI_URL='https://ubg-ai-fl.jason294022.workers.dev/';
 const isPlaceholder=u=>/YOUR-/.test(u);
 function show(v){$$('.view').forEach(e=>e.classList.toggle('on',e.id===(v==='games'?'games-view':v)));$$('nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
-$$$('nav button[data-v]').forEach(b=>b.onclick=()=>nav(b.dataset.v));
+$('nav button[data-v]').forEach(b=>b.onclick=()=>nav(b.dataset.v));
 
 /* settings */
 function save(k,v){try{localStorage.setItem(k,v)}catch(e){}}
