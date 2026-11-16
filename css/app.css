@@ -120,11 +120,31 @@ h2 {
   font-weight:600
 }
 #tabs {
-  flex:1;
+  flex:0 1 auto;
   display:flex;
   gap:4px;
   overflow-x:auto;
-  min-width:0
+  min-width:0;
+  max-width:calc(100% - 38px)
+}
+#newtab {
+  flex:none;
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  margin-left:2px;
+  padding:0;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:var(--mute);
+  cursor:pointer;
+  transition:background .2s,color .2s
+}
+#newtab:hover {
+  background:var(--panel);
+  color:var(--text)
 }
 .tab {
   display:flex;
@@ -715,7 +735,9 @@ button.btn:active,button.ghost:active {
   justify-content:space-between
 }
 :root[data-tabs=vertical] #newtab {
-  width:100%
+  width:100%;
+  height:34px;
+  margin:0
 }
 @media (max-width:600px) {
   #vtabs {
