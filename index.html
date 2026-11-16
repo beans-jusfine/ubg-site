@@ -181,7 +181,7 @@ button.btn:active,button.ghost:active{transform:scale(.95)}
 <div class="row"><div>custom wallpaper<small>upload an image (saved in this browser)</small></div><div class="ctl"><input type="file" id="wpf" accept="image/*" aria-label="Wallpaper image" style="max-width:190px"><button class="ghost" id="wpC">Clear</button></div></div>
 <div class="row"><div>wallpaper blur<small>0 is sharp</small></div><input type="range" id="wb" min="0" max="30" value="8" aria-label="Wallpaper blur"></div>
 <h2>proxy</h2>
-<div class="row"><div>wisp server<small id="wst">must start with wss://</small></div><input class="search" id="wisp" style="width:240px;padding:8px 12px;border-radius:10px" placeholder="wss://your-app.onrender.com/wisp/" aria-label="Wisp server URL"></div>
+<div class="row"><div>wisp server<small id="wst">must start with wss://</small></div><div class="ctl"><input class="search" id="wisp" style="width:240px;padding:8px 12px;border-radius:10px" placeholder="wss://your-app.onrender.com/wisp/" aria-label="Wisp server URL"><button class="ghost" id="wisp-start" type="button">Start proxy</button></div></div>
 </div>
 </section>
 </main>
@@ -238,6 +238,7 @@ function wispShow(){$('#wst').textContent='status: '+wispState()}
 $('#wisp').value=load('fl-wisp')||'';
 $('#wisp').onchange=e=>{const v=e.target.value.trim();if(v&&!/^wss:\/\//i.test(v)){e.target.value='';save('fl-wisp','')}else save('fl-wisp',v);wispShow()};
 wispShow();
+$('#wisp-start').onclick=()=>{try{const u=new URL(getWisp());u.protocol='https:';u.pathname='/';u.search='';u.hash='';window.open(u.origin,'_blank','noopener,noreferrer')}catch(e){toast('Enter a valid Wisp server URL first')}};
 window.FERNLIGHT={get wispUrl(){return getWisp()}};
 
 /* scramjet over wisp */
