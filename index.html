@@ -206,16 +206,21 @@ button.btn:active,button.ghost:active{transform:scale(.95)}
 <div id="toast" role="status"></div>
 <div id="player"><div class="box"><header><b id="ptitle"></b><button class="x" id="close" aria-label="Close"><i data-lucide="x"></i></button></header><div id="stage"></div><div class="hint" id="phint"></div></div></div>
 
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <script src="/config.js"></script>
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let lucidePromise=null;
+function renderIcons(){if(window.lucide?.createIcons)window.renderIcons()}
+function loadLucide(){if(window.lucide)return Promise.resolve();if(lucidePromise)return lucidePromise;lucidePromise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js';s.async=true;s.onload=()=>{renderIcons();resolve()};s.onerror=()=>reject(new Error('Lucide icons could not load'));document.head.appendChild(s)});return lucidePromise}
+loadLucide().catch(()=>{});
 /* ===== CONFIG: replace these two values with your real URLs ===== */
 const WISP_URL=window.NERO_CONFIG.wisp;
 const AI_URL=window.NERO_CONFIG.ai;
 const isPlaceholder=u=>/YOUR-/.test(u);
 function show(v){$$('.view').forEach(e=>e.classList.toggle('on',e.id===(v==='games'?'games-view':v)));$$('nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
 $$('nav button[data-v]').forEach(b=>b.onclick=()=>nav(b.dataset.v));
+let luminPromise=null;
+function initLumin(){if(window.Lumin){window.Lumin.init({container:'#games',theme:'dark'});return Promise.resolve()}if(luminPromise)return luminPromise;luminPromise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js';s.async=true;s.onload=()=>{try{window.Lumin.init({container:'#games',theme:'dark'});resolve()}catch(e){reject(e)}};s.onerror=()=>reject(new Error('Lumin games failed to load'));document.head.appendChild(s)});return luminPromise}
 
 /* settings */
 function save(k,v){try{localStorage.setItem(k,v)}catch(e){}}
@@ -333,7 +338,7 @@ const names={home:'new tab',games:'games',apps:'apps',ai:'ai',settings:'settings
 let tabs=[],cur=0,nid=0;
 const cT=()=>tabs.find(x=>x.id===cur);
 function newTab(v){v=v||'home';const t={id:++nid,v,src:'',u:'',title:names[v]};tabs.push(t);cur=t.id;draw()}
-function nav(v){const t=cT(),f=$('#f'+t.id);if(f)f.remove();proxyFrames.delete(t.id);t.v=v;t.src='';t.u='';t.title=names[v];draw()}
+function nav(v){const t=cT(),f=$('#f'+t.id);if(f)f.remove();proxyFrames.delete(t.id);t.v=v;t.src='';t.u='';t.title=names[v];draw();if(v==='games')initLumin().catch(e=>toast(e.message))}
 function closeTab(id){const i=tabs.findIndex(t=>t.id===id),f=$('#f'+id);if(f)f.remove();proxyFrames.delete(id);tabs.splice(i,1);if(!tabs.length)return newTab();if(cur===id)cur=tabs[Math.max(0,i-1)].id;draw()}
 function draw(){const t=cT();show(t.v);
 $$('#sites iframe').forEach(f=>f.style.display=f.id==='f'+t.id?'block':'none');
@@ -341,7 +346,7 @@ $('#url').value=t.v==='site'?t.src:'nero://'+t.v;
 const bar=$('#tabs');bar.innerHTML='';
 tabs.forEach(x=>{const b=document.createElement('div');b.className='tab'+(x.id===cur?' on':'');b.setAttribute('role','tab');b.tabIndex=0;
 const s=document.createElement('span');s.textContent=x.title;const k=document.createElement('button');k.innerHTML=ico('close',14);k.setAttribute('aria-label','Close tab');
-k.onclick=e=>{e.stopPropagation();closeTab(x.id)};b.onclick=()=>{cur=x.id;draw()};b.onkeydown=e=>{if(e.key==='Enter'){cur=x.id;draw()}};b.append(s,k);bar.appendChild(b)});lucide.createIcons({attrs:{'stroke-width':1.7}})}
+k.onclick=e=>{e.stopPropagation();closeTab(x.id)};b.onclick=()=>{cur=x.id;draw()};b.onkeydown=e=>{if(e.key==='Enter'){cur=x.id;draw()}};b.append(s,k);bar.appendChild(b)});renderIcons()}
 function norm(v){v=v.trim();if(/^https?:\/\//i.test(v))return v;return(/\s/.test(v)||!v.includes('.'))?eng(v):'https://'+v}
 function toast(m){const e=$('#toast');e.textContent=m;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',10000)}
 function ext(u){const w=window.open(u,'_blank');if(w)w.opener=null;else toast('Pop-up blocked. Copy this link and open it: '+u)}
@@ -371,7 +376,7 @@ $('nav button[data-v]').forEach(b=>b.innerHTML=ico(b.dataset.v,20));
 $$('[data-i]').forEach(e=>e.innerHTML=ico(e.dataset.i,24));
 const apps=[['YouTube','youtube.com','yt'],['Reddit','reddit.com','reddit'],['GitHub','github.com','gh'],['Twitch','twitch.tv','twitch'],['Wikipedia','wikipedia.org','wiki'],['Spotify','open.spotify.com','spotify'],['Discord','discord.com','discord'],['Google','google.com','google']];
 apps.forEach((a,i)=>{const b=document.createElement('button');b.className='card';b.style.setProperty('--i',i);b.innerHTML=`<div class="ic">${ico(a[2])}</div>${a[0]}<small>${a[1]}</small>`;b.onclick=()=>openUrl('https://'+a[1]);$('#ag').appendChild(b)});
-lucide.createIcons({attrs:{'stroke-width':1.7}});
+renderIcons();
 
 $('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(eng(q),true)};
 
@@ -431,12 +436,6 @@ else if(b.dataset.s){b.dataset.s='';start()}else{clearTimeout(to);b.style.backgr
 start();return()=>clearTimeout(to)}
 </script>
 
-<script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"></script>
-<script>
-Lumin.init({
-  container: '#games',
-  theme: 'dark'
-});
-</script>
+
 </body>
 </html>
