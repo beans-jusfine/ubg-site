@@ -190,11 +190,12 @@ button.btn:active,button.ghost:active{transform:scale(.95)}
 <div id="player"><div class="box"><header><b id="ptitle"></b><button class="x" id="close" aria-label="Close"><i data-lucide="x"></i></button></header><div id="stage"></div><div class="hint" id="phint"></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="/config.js"></script>
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 /* ===== CONFIG: replace these two values with your real URLs ===== */
-const WISP_URL='wss://ubg-site-wisp.onrender.com/wisp/';
-const AI_URL='https://ubg-ai-fl.jason294022.workers.dev/';
+const WISP_URL=window.NERO_CONFIG.wisp;
+const AI_URL=window.NERO_CONFIG.ai;
 const isPlaceholder=u=>/YOUR-/.test(u);
 function show(v){$$('.view').forEach(e=>e.classList.toggle('on',e.id===(v==='games'?'games-view':v)));$$('nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
 $$('nav button[data-v]').forEach(b=>b.onclick=()=>nav(b.dataset.v));
