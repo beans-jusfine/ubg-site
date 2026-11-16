@@ -322,7 +322,6 @@ initProxy().then(()=>siteTab(v)).catch(e=>toast(e.message))}
 $('#newtab').onclick=()=>newTab();
 $('#ext').onclick=()=>{const t=cT();if(t&&t.u)ext(t.u)};
 $('#url').onfocus=e=>e.target.select();$('#url').onkeydown=e=>{if(e.key==='Enter')openUrl(e.target.value)};
-newTab();
 
 /* apps */
 const ICON={
