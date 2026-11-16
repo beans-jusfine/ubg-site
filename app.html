@@ -429,7 +429,6 @@ canvas {
   font-size:13px;
   margin-top:8px
 }
-
 @keyframes vin {
   from {
     opacity:0;
@@ -909,7 +908,24 @@ button.btn:active,button.ghost:active {
 <div class="row"><div>color mode<small>accent preset</small></div>
 <select id="mode"><option>black</option><option>green</option><option>blue</option><option>red</option></select></div>
 <div class="row"><div>accent color<small>buttons, highlights, hover borders</small></div><div class="ctl"><input type="color" id="acc" value="#e8e8e8" aria-label="Accent color"><button class="ghost" id="accR">Reset</button></div></div>
-<div class="row"><div>custom wallpaper<small>upload an image (saved in this browser)</small></div><div class="ctl"><input type="file" id="wpf" accept="image
+<div class="row"><div>custom wallpaper<small>upload an image (saved in this browser)</small></div><div class="ctl"><input type="file" id="wpf" accept="image/*" aria-label="Wallpaper image" style="max-width:190px"><button class="ghost" id="wpC">Clear</button></div></div>
+<div class="row"><div>wallpaper blur<small>0 is sharp</small></div><input type="range" id="wb" min="0" max="30" value="8" aria-label="Wallpaper blur"></div>
+<h2>proxy</h2>
+<div class="row"><div>wisp server<small id="wst">must start with wss://</small></div><div class="ctl"><input class="search" id="wisp" style="width:240px;padding:8px 12px;border-radius:10px" placeholder="wss://your-app.onrender.com/wisp/" aria-label="Wisp server URL"><button class="ghost" id="wisp-start" type="button"><i data-lucide="play"></i> Start proxy</button></div></div>
+</div>
+</section>
+</main>
+</div>
+<div id="toast" role="status"></div>
+<div id="player"><div class="box"><header><b id="ptitle"></b><button class="x" id="close" aria-label="Close"><i data-lucide="x"></i></button></header><div id="stage"></div><div class="hint" id="phint"></div></div></div>
+
+<script src="/config.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let lucidePromise=null;
+function renderIcons(){if(window.lucide?.createIcons)window.lucide.createIcons()}
+function loadLucide(){if(window.lucide)return Promise.resolve();if(lucidePromise)return lucidePromise;lucidePromise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js';s.async=true;s.onload=()=>{renderIcons();resolve()};s.onerror=()=>reject(new Error('Lucide icons could not load'));document.head.appendChild(s)});return lucidePromise}
+loadLucide().catch(()=>{});
 const WISP_URL=window.NERO_CONFIG.wisp;
 const AI_URL=window.NERO_CONFIG.ai;
 const isPlaceholder=u=>/YOUR-/.test(u);
@@ -918,14 +934,12 @@ $$('nav button[data-v]').forEach(b=>b.onclick=()=>nav(b.dataset.v));
 let luminPromise=null,luminInitialized=false;
 function initLumin(){if(luminInitialized)return Promise.resolve();if(luminPromise)return luminPromise;luminPromise=new Promise((resolve,reject)=>{if(window.Lumin){try{window.Lumin.init({container:'#games',theme:'dark'});luminInitialized=true;resolve()}catch(e){reject(e)}return}const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js';s.async=true;s.onload=()=>{try{window.Lumin.init({container:'#games',theme:'dark'});luminInitialized=true;resolve()}catch(e){reject(e)}};s.onerror=()=>reject(new Error('Lumin games failed to load'));document.head.appendChild(s)});return luminPromise}
 
-
 function save(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function load(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function applyMode(m){const r=document.documentElement;if(m==='black')r.removeAttribute('data-mode');else r.dataset.mode=m;$('#mode').value=m;save('fl-mode',m)}
 function applyWall(on){document.documentElement.dataset.wall=on?'on':'off';$('#wall').checked=on;save('fl-wall',on?'1':'0')}
 $('#mode').onchange=e=>applyMode(e.target.value);$('#wall').onchange=e=>applyWall(e.target.checked);
 applyMode(load('fl-mode')||'black');applyWall(load('fl-wall')!=='0');
-
 
 const root=document.documentElement;
 function setAcc(c){if(c){root.style.setProperty('--acc',c);$('#acc').value=c}else root.style.removeProperty('--acc');save('fl-acc',c||'')}
@@ -937,7 +951,6 @@ $('#wpC').onclick=()=>{setWp('');$('#wpf').value=''};
 if(load('fl-wp'))setWp(load('fl-wp'));
 function setBlur(v){root.style.setProperty('--wb',v+'px');$('#wb').value=v;save('fl-wb',v)}
 $('#wb').oninput=e=>setBlur(e.target.value);if(load('fl-wb'))setBlur(load('fl-wb'));
-
 
 function pick(box,k){$$('#'+box+' .opt').forEach(b=>{const on=b.dataset.k===k;b.classList.toggle('sel',on);b.setAttribute('aria-pressed',on)})}
 function setScheme(k){root.dataset.scheme=k;pick('o-scheme',k);save('fl-scheme',k)}
@@ -951,7 +964,6 @@ $('#se').value=ENG[load('fl-se')]?load('fl-se'):'Brave';
 function seLabel(){const p='Search with '+$('#se').value+'…';$('#hs').placeholder=p;$('#hs').setAttribute('aria-label',p)}
 $('#se').onchange=e=>{save('fl-se',e.target.value);seLabel()};seLabel();
 
-
 function getWisp(){const v=(load('fl-wisp')||'').trim();return v||WISP_URL}
 function wispState(){const v=getWisp();return isPlaceholder(v)?'not set':!/^wss:\/\//i.test(v)?'invalid, must start with wss://':'ready'}
 function wispShow(){$('#wst').textContent='status: '+wispState()}
@@ -960,7 +972,6 @@ $('#wisp').onchange=e=>{const v=e.target.value.trim();if(v&&!/^wss:\/\//i.test(v
 wispShow();
 $('#wisp-start').onclick=()=>{try{const u=new URL(getWisp());u.protocol='https:';u.pathname='/';u.search='';u.hash='';window.open(u.origin,'_blank','noopener,noreferrer')}catch(e){toast('Enter a valid Wisp server URL first')}};
 window.FERNLIGHT={get wispUrl(){return getWisp()}};
-
 
 let proxyReady=null,controller=null,EpoxyClientClass=null;
 const proxyFrames=new Map();
@@ -999,7 +1010,6 @@ return proxyReady}
 const _wc=$('#wisp').onchange;
 $('#wisp').onchange=e=>{_wc(e);if(controller&&EpoxyClientClass)controller.setTransport(new EpoxyClientClass({wisp:getWisp()}))};
 
-
 const chat=$('#chat'),ain=$('#ai-in');let aiBusy=false;
 const MEMORY_KEY='nero.ai.memory.v1',HISTORY_KEY='nero.ai.history.v1';
 function readStore(k,fallback){try{const v=JSON.parse(localStorage.getItem(k)||'null');return Array.isArray(v)?v:fallback}catch(e){return fallback}}
@@ -1027,7 +1037,6 @@ $('#memory-input').onkeydown=e=>{if(e.key==='Enter')$('#memory-add').click()};
 $('#memory-clear').onclick=()=>{if(!memories.length)return;if(confirm('Delete every saved NERO AI memory from this browser?')){memories=[];store(MEMORY_KEY,memories);renderMemories()}};
 renderMemories();renderHistory();
 $('#ai-send').onclick=ask;ain.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}};
-
 
 
 const names={home:'new tab',games:'games',apps:'apps',ai:'ai',settings:'settings'};
@@ -1058,7 +1067,6 @@ $('#newtab').onclick=()=>newTab();
 $('#ext').onclick=()=>{const t=cT();if(t&&t.u)ext(t.u)};
 $('#url').onfocus=e=>e.target.select();$('#url').onkeydown=e=>{if(e.key==='Enter')openUrl(e.target.value)};
 
-
 const ICON={
 home:'house',games:'gamepad-2',apps:'grid-2x2',settings:'settings',
 snake:'snake',flappy:'bird',memory:'layers',bolt:'zap',
@@ -1068,14 +1076,13 @@ sun:'sun',moon:'moon',monitor:'monitor',tabsH:'panel-top',tabsV:'panel-left',ai:
 };
 const ico=(k,s=30)=>`<i data-lucide='${ICON[k]||'circle'}' style='width:${s}px;height:${s}px' aria-hidden='true'></i>`;
 newTab();
-$('nav button[data-v]').forEach(b=>b.innerHTML=ico(b.dataset.v,20));
+$$('nav button[data-v]').forEach(b=>b.innerHTML=ico(b.dataset.v,20));
 $$('[data-i]').forEach(e=>e.innerHTML=ico(e.dataset.i,24));
 const apps=[['YouTube','youtube.com','yt'],['Reddit','reddit.com','reddit'],['GitHub','github.com','gh'],['Twitch','twitch.tv','twitch'],['Wikipedia','wikipedia.org','wiki'],['Spotify','open.spotify.com','spotify'],['Discord','discord.com','discord'],['Google','google.com','google']];
 apps.forEach((a,i)=>{const b=document.createElement('button');b.className='card';b.style.setProperty('--i',i);b.innerHTML=`<div class="ic">${ico(a[2])}</div>${a[0]}<small>${a[1]}</small>`;b.onclick=()=>openUrl('https://'+a[1]);$('#ag').appendChild(b)});
 renderIcons();
 
 $('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(eng(q),true)};
-
 
 let stop=null;
 function play(g){$('#ptitle').textContent=g.n;$('#phint').textContent=g.h;$('#stage').innerHTML='';$('#player').classList.add('on');stop=g.f($('#stage'))}
