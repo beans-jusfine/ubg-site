@@ -1251,3 +1251,28 @@ main:has(>#ai.view.on) {
   #ai .msg {max-width:94%}
   #ai .cbar {padding-top:9px}
 }
+
+
+/* Multiple AI conversations */
+#ai .ai-chat-layout{display:flex;flex:1;min-height:0;min-width:0;gap:18px}
+#ai .chat-sidebar{display:flex;flex-direction:column;flex:none;width:230px;min-height:0;border-right:1px solid var(--line);padding:0 14px 0 0}
+#ai .chat-sidebar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 12px;font-size:13px}
+#ai #chat-new{font-size:12px;padding:7px 9px;white-space:nowrap}
+#ai .chat-list{display:flex;flex-direction:column;gap:5px;overflow-y:auto;min-height:0}
+#ai .chat-item{display:flex;align-items:center;gap:4px;min-width:0;border:1px solid transparent;border-radius:9px}
+#ai .chat-item.active{background:var(--panel);border-color:var(--line)}
+#ai .chat-pick{flex:1;min-width:0;padding:10px 8px;border:0;background:none;color:var(--text);text-align:left;font:inherit;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+#ai .chat-delete{flex:none;padding:4px 8px;border:0;background:transparent;color:var(--mute);font-size:18px;line-height:1}
+#ai .chat-delete:hover{color:#f87171}
+#ai .chat-item button:disabled{opacity:.45;cursor:default}
+#ai .ai-chat-main{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0}
+#ai .ai-chat-main .chat{flex:1;width:100%;max-width:none;min-height:0}
+#ai .ai-chat-main .cbar{flex:none;width:100%;max-width:none}
+@media(max-width:700px){
+#ai .ai-chat-layout{gap:10px}
+#ai .chat-sidebar{width:142px;padding-right:8px}
+#ai .chat-sidebar-head{align-items:flex-start;flex-direction:column}
+#ai #chat-new{width:100%;padding:7px 4px}
+#ai .chat-pick{font-size:11px;padding:9px 5px}
+#ai .chat-delete{padding:4px}
+}
