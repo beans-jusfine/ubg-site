@@ -122,7 +122,7 @@ const cT=()=>tabs.find(x=>x.id===cur);
 function newTab(v){v=v||'home';const t={id:++nid,v,src:'',u:'',title:names[v]};tabs.push(t);cur=t.id;draw()}
 function nav(v){const t=cT(),f=$('#f'+t.id);if(f)f.remove();proxyFrames.delete(t.id);t.v=v;t.src='';t.u='';t.title=names[v];draw();if(v==='games')initLumin().catch(e=>toast(e.message))}
 function closeTab(id){const i=tabs.findIndex(t=>t.id===id),f=$('#f'+id);if(f)f.remove();proxyFrames.delete(id);tabs.splice(i,1);if(!tabs.length)return newTab();if(cur===id)cur=tabs[Math.max(0,i-1)].id;draw()}
-function draw(){const t=cT();show(t.v);
+function draw(){const t=cT();show(t.v);Object.entries(navButtons).forEach(([k,b])=>{b.disabled=k!=='home'&&t.v!=='site';b.style.opacity=b.disabled?'.4':'1';b.style.cursor=b.disabled?'default':'pointer'});
 $$('#sites iframe').forEach(f=>f.style.display=f.id==='f'+t.id?'block':'none');
 $('#url').value=t.v==='site'?t.src:'nero://'+t.v;
 const bar=$('#tabs');bar.innerHTML='';
@@ -152,6 +152,30 @@ wiki:'book-open',spotify:'music-2',discord:'messages-square',google:'search',
 sun:'sun',moon:'moon',monitor:'monitor',tabsH:'panel-top',tabsV:'panel-left',ai:'sparkles',close:'x'
 };
 const ico=(k,s=30)=>`<i data-lucide='${ICON[k]||'circle'}' style='width:${s}px;height:${s}px' aria-hidden='true'></i>`;
+const navTools=document.createElement('div');
+navTools.style.cssText='display:flex;align-items:center;gap:4px;flex:none';
+const navButtons={};
+[['back','arrow-left','Back'],['forward','arrow-right','Forward'],['reload','rotate-cw','Reload'],['home','house','Home']].forEach(([key,icon,label])=>{
+  const b=document.createElement('button');b.type='button';b.className='ghost';b.title=label;b.setAttribute('aria-label',label);
+  b.style.cssText='width:34px;height:34px;padding:0;display:grid;place-items:center;flex:none';
+  b.innerHTML=`<i data-lucide="${icon}" aria-hidden="true"></i>`;
+  navButtons[key]=b;navTools.appendChild(b);
+});
+$('#url').parentElement.insertBefore(navTools,$('#url'));
+function runNavAction(action){
+  if(action==='home'){nav('home');return}
+  const t=cT(),frame=t&&proxyFrames.get(t.id),iframe=t&&$('#f'+t.id);
+  if(!t||t.v!=='site'||!iframe){toast('Open a website first');return}
+  try{
+    if(action==='back')iframe.contentWindow.history.back();
+    else if(action==='forward')iframe.contentWindow.history.forward();
+    else if(action==='reload')iframe.contentWindow.location.reload();
+  }catch(e){if(action==='reload'&&frame&&typeof frame.go==='function')frame.go(t.src);else toast('This page does not allow that navigation action')}
+}
+navButtons.back.onclick=()=>runNavAction('back');
+navButtons.forward.onclick=()=>runNavAction('forward');
+navButtons.reload.onclick=()=>runNavAction('reload');
+navButtons.home.onclick=()=>runNavAction('home');
 newTab();
 $$('nav button[data-v]').forEach(b=>b.innerHTML=ico(b.dataset.v,20));
 $$('[data-i]').forEach(e=>e.innerHTML=ico(e.dataset.i,24));
