@@ -121,7 +121,7 @@ renderMemories();saveChats();renderChatList();renderHistory();
 $('#ai-send').onclick=ask;ain.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}};
 
 
-const names={home:'new tab',games:'games',apps:'apps',ai:'ai',settings:'settings'};
+const names={home:'new tab',games:'games',ai:'ai',settings:'settings'};
 let tabs=[],cur=0,nid=0;
 const cT=()=>tabs.find(x=>x.id===cur);
 function newTab(v){v=v||'home';const t={id:++nid,v,src:'',u:'',title:names[v]};tabs.push(t);cur=t.id;draw()}
@@ -150,7 +150,7 @@ $('#ext').onclick=()=>{const t=cT();if(t&&t.u)ext(t.u)};
 $('#url').onfocus=e=>e.target.select();$('#url').onkeydown=e=>{if(e.key==='Enter')openUrl(e.target.value)};
 
 const ICON={
-home:'house',games:'gamepad-2',apps:'grid-2x2',settings:'settings',
+home:'house',games:'gamepad-2',settings:'settings',
 snake:'snake',flappy:'bird',memory:'layers',bolt:'zap',
 yt:'play-square',reddit:'message-circle',gh:'git-branch',twitch:'message-square',
 wiki:'book-open',spotify:'music-2',discord:'messages-square',google:'search',
@@ -184,8 +184,8 @@ navButtons.home.onclick=()=>runNavAction('home');
 newTab();
 $$('nav button[data-v]').forEach(b=>b.innerHTML=ico(b.dataset.v,20));
 $$('[data-i]').forEach(e=>e.innerHTML=ico(e.dataset.i,24));
-const apps=[['YouTube','youtube.com','yt'],['Reddit','reddit.com','reddit'],['GitHub','github.com','gh'],['Twitch','twitch.tv','twitch'],['Wikipedia','wikipedia.org','wiki'],['Spotify','open.spotify.com','spotify'],['Discord','discord.com','discord'],['Google','google.com','google']];
-apps.forEach((a,i)=>{const b=document.createElement('button');b.className='card';b.style.setProperty('--i',i);b.innerHTML=`<div class="ic">${ico(a[2])}</div>${a[0]}<small>${a[1]}</small>`;b.onclick=()=>openUrl('https://'+a[1]);$('#ag').appendChild(b)});
+const shortcuts=[['YouTube','play-square','https://nero-tube.onrender.com','NERO Tube'],['Discord','messages-square','https://discord.com','discord.com'],['GeForce NOW','gamepad-2','https://play.geforcenow.com','play.geforcenow.com'],['TikTok','music-2','https://www.tiktok.com','tiktok.com'],['now.gg','cloud','https://nowgg.fun','nowgg.fun']];
+shortcuts.forEach(([name,icon,url,host],i)=>{const b=document.createElement('button');b.type='button';b.className='shortcut';b.style.setProperty('--i',i);b.innerHTML=`<span class=\"shortcut-icon\">${ico(icon,25)}</span><span class=\"shortcut-name\">${name}</span><span class=\"shortcut-host\">${host}</span>`;b.onclick=()=>openUrl(url);$('#shortcuts').appendChild(b)});
 renderIcons();
 
 $('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(eng(q),true)};
