@@ -184,9 +184,32 @@ navButtons.home.onclick=()=>runNavAction('home');
 newTab();
 $$('nav button[data-v]').forEach(b=>b.innerHTML=ico(b.dataset.v,20));
 $$('[data-i]').forEach(e=>e.innerHTML=ico(e.dataset.i,24));
-const shortcuts=[['YouTube','play-square','https://nero-tube.onrender.com','NERO Tube'],['Discord','messages-square','https://discord.com','discord.com'],['GeForce NOW','gamepad-2','https://play.geforcenow.com','play.geforcenow.com'],['TikTok','music-2','https://www.tiktok.com','tiktok.com'],['now.gg','cloud','https://nowgg.fun','nowgg.fun']];
-shortcuts.forEach(([name,icon,url,host],i)=>{const b=document.createElement('button');b.type='button';b.className='shortcut';b.style.setProperty('--i',i);b.innerHTML=`<span class=\"shortcut-icon\">${ico(icon,25)}</span><span class=\"shortcut-name\">${name}</span><span class=\"shortcut-host\">${host}</span>`;b.onclick=()=>openUrl(url);$('#shortcuts').appendChild(b)});
-renderIcons();
+const DEFAULT_SHORTCUTS=[['YouTube','https://nero-tube.onrender.com','https://www.youtube.com/favicon.ico'],['Discord','https://discord.com','https://discord.com/favicon.ico'],['GeForce NOW','https://play.geforcenow.com','https://www.nvidia.com/favicon.ico'],['TikTok','https://www.tiktok.com','https://www.tiktok.com/favicon.ico'],['now.gg','https://nowgg.fun','https://nowgg.fun/favicon.ico']];
+const SHORTCUT_KEY='nero.home.shortcuts.v1';
+function readShortcuts(){try{const saved=JSON.parse(localStorage.getItem(SHORTCUT_KEY)||'[]');return Array.isArray(saved)?saved.filter(x=>x&&typeof x.name==='string'&&typeof x.url==='string'&&typeof x.icon==='string'):[]}catch(e){return[]}}
+let customShortcuts=readShortcuts();
+function saveShortcuts(){try{localStorage.setItem(SHORTCUT_KEY,JSON.stringify(customShortcuts))}catch(e){toast('Could not save shortcuts in this browser')}}
+function addShortcutTile(name,url,icon,index,custom=false){
+ const b=document.createElement('button');b.type='button';b.className='shortcut';b.style.setProperty('--i',index);
+ const image=document.createElement('img');image.className='shortcut-favicon';image.alt='';image.loading='lazy';image.src=icon;
+ image.onerror=()=>{image.onerror=null;image.src='https://www.google.com/s2/favicons?domain_url='+encodeURIComponent(url)+'&sz=64'};
+ const iconBox=document.createElement('span');iconBox.className='shortcut-icon';iconBox.appendChild(image);
+ const label=document.createElement('span');label.className='shortcut-name';label.textContent=name;
+ let host='';try{host=new URL(url).hostname.replace(/^www\\./,'')}catch(e){}
+ const domain=document.createElement('span');domain.className='shortcut-host';domain.textContent=host;
+ b.append(iconBox,label,domain);b.onclick=()=>openUrl(url);
+ if(custom){const remove=document.createElement('span');remove.className='shortcut-remove';remove.textContent='×';remove.title='Remove shortcut';remove.setAttribute('role','button');remove.setAttribute('aria-label','Remove '+name);remove.onclick=e=>{e.stopPropagation();customShortcuts=customShortcuts.filter(x=>!(x.name===name&&x.url===url&&x.icon===icon));saveShortcuts();renderShortcuts()};b.appendChild(remove)}
+ $('#shortcuts').appendChild(b);
+}
+function renderShortcuts(){
+ const grid=$('#shortcuts');grid.replaceChildren();
+ DEFAULT_SHORTCUTS.forEach((x,i)=>addShortcutTile(x[0],x[1],x[2],i));
+ customShortcuts.forEach((x,i)=>addShortcutTile(x.name,x.url,x.icon,DEFAULT_SHORTCUTS.length+i,true));
+ const add=document.createElement('button');add.type='button';add.className='shortcut shortcut-add';
+ add.innerHTML='<span class="shortcut-icon"><i data-lucide="plus" style="width:25px;height:25px"></i></span><span class="shortcut-name">Add shortcut</span><span class="shortcut-host">Custom website</span>';
+ add.onclick=()=>{const name=prompt('Shortcut name:');if(!name||!name.trim())return;let url=prompt('Website URL (include https://):');if(!url)return;url=url.trim();if(!/^https?:\\/\\//i.test(url))url='https://'+url;try{url=new URL(url).href}catch(e){toast('Enter a valid website URL');return}let icon=prompt('Favicon URL (optional — leave blank to use the website favicon):','');if(icon&&icon.trim()){try{icon=new URL(icon.trim(),url).href}catch(e){toast('Enter a valid favicon URL');return}}else icon=new URL('/favicon.ico',url).href;customShortcuts.push({name:name.trim().slice(0,32),url,icon});saveShortcuts();renderShortcuts()};
+ grid.appendChild(add);renderIcons();
+}
 
 $('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(eng(q),true)};
 
