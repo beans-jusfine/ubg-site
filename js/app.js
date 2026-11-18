@@ -211,6 +211,8 @@ function renderShortcuts(){
  grid.appendChild(add);renderIcons();
 }
 
+renderShortcuts();
+
 $('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(eng(q),true)};
 
 let stop=null;
