@@ -121,7 +121,7 @@ renderMemories();saveChats();renderChatList();renderHistory();
 $('#ai-send').onclick=ask;ain.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}};
 
 
-const names={home:'new tab',games:'games',ai:'ai',settings:'settings'};
+const names={home:'new tab',tube:'NERO Tube',games:'games',ai:'ai',settings:'settings'};
 let tabs=[],cur=0,nid=0;
 const cT=()=>tabs.find(x=>x.id===cur);
 function newTab(v){v=v||'home';const t={id:++nid,v,src:'',u:'',title:names[v]};tabs.push(t);cur=t.id;draw()}
@@ -142,7 +142,8 @@ let h=v;try{h=new URL(v).hostname.replace(/^www\./,'')}catch(e){}
 t.v='site';t.src=v;t.u=v;t.title=h;let f=$('#f'+t.id),frame=proxyFrames.get(t.id);
 if(!f){f=document.createElement('iframe');f.id='f'+t.id;f.className='sf';$('#sites').appendChild(f);frame=controller.createFrame(f);proxyFrames.set(t.id,frame)}
 f.title=h;frame.go(v);draw()}
-function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;const m=raw.match(/^nero:\/\/(\w+)/);if(m&&names[m[1]])return nav(m[1]);
+function isYoutubeAddress(raw){let value=String(raw||'').trim();if(!value)return false;try{const u=new URL(/^\/\//.test(value)?'https:'+value:/^[a-z][a-z0-9+.-]*:\/\//i.test(value)?value:'https://'+value);const host=u.hostname.toLowerCase().replace(/\\.$/,'');return /(^|\\.)(youtube\\.com|youtube-nocookie\\.com|youtu\\.be)$/.test(host)}catch(e){return false}}
+function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;if(isYoutubeAddress(raw))return nav('tube');const m=raw.match(/^nero:\/\/(\w+)/);if(m&&names[m[1]])return nav(m[1]);
 const v=norm(raw);
 initProxy().then(()=>siteTab(v)).catch(e=>toast(e.message))}
 $('#newtab').onclick=()=>newTab();
@@ -213,7 +214,7 @@ function renderShortcuts(){
 
 renderShortcuts();
 
-$('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(eng(q),true)};
+$('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(q,true)};
 
 let stop=null;
 function play(g){$('#ptitle').textContent=g.n;$('#phint').textContent=g.h;$('#stage').innerHTML='';$('#player').classList.add('on');stop=g.f($('#stage'))}
