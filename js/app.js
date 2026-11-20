@@ -50,10 +50,12 @@ wispShow();
 $('#wisp-start').onclick=()=>{try{const u=new URL(getWisp());u.protocol='https:';u.pathname='/';u.search='';u.hash='';window.open(u.origin,'_blank','noopener,noreferrer')}catch(e){toast('Enter a valid Wisp server URL first')}};
 window.FERNLIGHT={get wispUrl(){return getWisp()}};
 
-let proxyReady=null,controller=null,EpoxyClientClass=null;
+let proxyReady=null,controller=null,EpoxyClientClass=null,proxyStatusEl=null;
 const proxyFrames=new Map();
+function setProxyStatus(label,state,title){if(!proxyStatusEl)return;proxyStatusEl.textContent=label;proxyStatusEl.dataset.state=state||'idle';proxyStatusEl.title=title||label;}
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Missing file '+src+'. Did you run the setup and upload the public folder?'));document.head.appendChild(s)})}
 function initProxy(){if(proxyReady)return proxyReady;
+setProxyStatus('Connecting proxy…','pending','Waking and connecting to the NERO proxy');
 proxyReady=(async()=>{
 const w=getWisp();
 if(isPlaceholder(w)||!/^wss:\/\//i.test(w))throw new Error('Set a valid wss:// Wisp address in Settings first');
@@ -81,8 +83,9 @@ if(!EpoxyClientClass)throw new Error('Scramjet 2.x Epoxy transport failed to loa
 controller=new api.Controller({serviceworker,transport:new EpoxyClientClass({wisp:w}),config:{prefix:'/scramjet/',scramjetPath:'/scram/scramjet.js',wasmPath:'/scram/scramjet.wasm',injectPath:'/controller/controller.inject.js'}});
 await controller.wait();
 setInterval(()=>navigator.serviceWorker.controller?.postMessage('keepalive'),15000);
+setProxyStatus('Proxy ready','ready','NERO proxy is connected');
 })();
-proxyReady.catch(()=>{proxyReady=null});
+proxyReady.catch(error=>{proxyReady=null;setProxyStatus('Proxy offline','error',error?.message||'Proxy connection failed. Click to retry.');});
 return proxyReady}
 const _wc=$('#wisp').onchange;
 $('#wisp').onchange=e=>{_wc(e);if(controller&&EpoxyClientClass)controller.setTransport(new EpoxyClientClass({wisp:getWisp()}))};
@@ -176,6 +179,9 @@ const navButtons={};
   navButtons[key]=b;navTools.appendChild(b);
 });
 $('#url').parentElement.insertBefore(navTools,$('#url'));
+proxyStatusEl=document.createElement('button');proxyStatusEl.type='button';proxyStatusEl.className='nero-proxy-status';proxyStatusEl.textContent='Proxy starting…';proxyStatusEl.style.cssText='flex:none;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--muted,#aaa);border-radius:999px;padding:5px 9px;font:11px/1.2 inherit;white-space:nowrap;cursor:pointer';
+proxyStatusEl.onclick=()=>{if(proxyStatusEl.dataset.state==='error'||proxyStatusEl.dataset.state==='idle')initProxy().catch(e=>toast(e.message));};
+proxyStatusEl.dataset.state='pending';$('#url').parentElement.insertBefore(proxyStatusEl,$('#url'));
 function runNavAction(action){
   if(action==='home'){nav('home');return}
   const t=cT(),frame=t&&proxyFrames.get(t.id),iframe=t&&$('#f'+t.id);
@@ -221,6 +227,10 @@ function renderShortcuts(){
 }
 
 renderShortcuts();
+
+// Warm the proxy while the user is on the NERO home screen so the first
+// website does not have to pay the service-worker and Render startup cost.
+initProxy().catch(error=>setProxyStatus('Proxy offline','error',error?.message||'Click to retry the proxy connection'));
 
 $('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(q,true)};
 
