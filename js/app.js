@@ -143,7 +143,8 @@ t.v='site';t.src=v;t.u=v;t.title=h;let f=$('#f'+t.id),frame=proxyFrames.get(t.id
 if(!f){f=document.createElement('iframe');f.id='f'+t.id;f.className='sf';$('#sites').appendChild(f);frame=controller.createFrame(f);proxyFrames.set(t.id,frame)}
 f.title=h;frame.go(v);draw()}
 function isYoutubeAddress(raw){let value=String(raw||'').trim();if(!value)return false;try{const u=new URL(/^\/\//.test(value)?'https:'+value:/^[a-z][a-z0-9+.-]*:\/\//i.test(value)?value:'https://'+value);const host=u.hostname.toLowerCase().replace(/\.$/,'');return /(^|\.)(youtube\.com|youtube-nocookie\.com|youtu\.be)$/.test(host)}catch(e){return false}}
-function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;if(isYoutubeAddress(raw)){ext('https://nero-tube.onrender.com');return;}const m=raw.match(/^nero:\/\/(\w+)/);if(m&&names[m[1]])return nav(m[1]);
+function isNeroTubeAddress(raw){try{const u=new URL(/^https?:\/\//i.test(raw)?raw:'https://'+String(raw||'').trim());return /(^|\.)nero-tube\.onrender\.com$/i.test(u.hostname)}catch(e){return false}}
+function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;if(isYoutubeAddress(raw)||isNeroTubeAddress(raw)){ext('https://nero-tube.onrender.com');return;}const m=raw.match(/^nero:\/\/(\w+)/);if(m&&names[m[1]])return nav(m[1]);
 const v=norm(raw);
 initProxy().then(()=>siteTab(v)).catch(e=>toast(e.message))}
 $('#newtab').onclick=()=>newTab();
