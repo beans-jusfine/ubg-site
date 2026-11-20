@@ -140,7 +140,7 @@ function ext(u){const w=window.open(u,'_blank');if(w)w.opener=null;else toast('P
 function siteTab(v){let t=cT();if(t.v!=='home'&&t.v!=='site'){newTab();t=cT()}
 let h=v;try{h=new URL(v).hostname.replace(/^www\./,'')}catch(e){}
 t.v='site';t.src=v;t.u=v;t.title=h;let f=$('#f'+t.id),frame=proxyFrames.get(t.id);
-if(!f){f=document.createElement('iframe');f.id='f'+t.id;f.className='sf';$('#sites').appendChild(f)}
+if(!f){f=document.createElement('iframe');f.id='f'+t.id;f.className='sf';f.allow='fullscreen; autoplay; picture-in-picture';f.allowFullscreen=true;$('#sites').appendChild(f)}else{f.allow='fullscreen; autoplay; picture-in-picture';f.allowFullscreen=true}
 if(isNeroTubeAddress(v)){
 proxyFrames.delete(t.id);t.direct=true;f.src=v;
 }else{
