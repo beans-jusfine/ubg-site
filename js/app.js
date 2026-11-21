@@ -40,7 +40,7 @@ tabCloakSet.insertAdjacentHTML('beforeend',
 );
 const cloakTitle=$('#cloak-title'),cloakIconUrl=$('#cloak-icon-url'),cloakFile=$('#cloak-icon-file');
 let cloakUploadedIcon='';
-const cloakIconLink=(()=>{let l=document.querySelector('link[rel~="icon"]');if(!l){l=document.createElement('link');l.rel='icon';document.head.appendChild(l)}return l})();
+const cloakIconLink=(()=>{let l=document.getElementById('nero-tab-cloak-icon');if(!l){l=document.createElement('link');l.id='nero-tab-cloak-icon';l.rel='icon';document.head.appendChild(l)}return l})();
 function cloakPreview(){
   const title=(cloakTitle.value||'NERO').trim().slice(0,60)||'NERO';
   const icon=cloakUploadedIcon||cloakIconUrl.value.trim();
@@ -50,21 +50,21 @@ function cloakPreview(){
 function applyTabCloak(title,icon,persist=true){
   title=(String(title||'NERO').trim().slice(0,60)||'NERO');
   document.title=title;
-  if(icon){cloakIconLink.href=icon;cloakIconLink.type=icon.startsWith('data:image/svg+xml')?'image/svg+xml':''}
-  else{cloakIconLink.removeAttribute('href');cloakIconLink.removeAttribute('type')}
+  if(icon){cloakIconLink.href=icon;cloakIconLink.type=icon.startsWith('data:image/svg+xml')?'image/svg+xml':(icon.startsWith('data:image/png')?'image/png':'')}
+  else{cloakIconLink.href='/img/favicon.png';cloakIconLink.type='image/png'}
   if(persist){try{localStorage.setItem(TAB_CLOAK_KEY,JSON.stringify({title,icon:icon||''}))}catch(e){toast('Could not save tab style in this browser')}}
 }
 function setCloakPreset(key){
   const preset=tabCloakPresets[key];if(!preset)return;
   cloakUploadedIcon='';cloakTitle.value=preset.title;cloakIconUrl.value=preset.icon;cloakFile.value='';cloakPreview();
 }
-$('#cloak-preset').onchange=e=>{if(e.target.value!=='custom')setCloakPreset(e.target.value)};
-[cloakTitle,cloakIconUrl].forEach(el=>el.addEventListener('input',()=>{$('#cloak-preset').value='custom';cloakUploadedIcon='';cloakPreview()}));
+$('#cloak-preset').onchange=e=>{if(e.target.value!=='custom'){setCloakPreset(e.target.value);applyTabCloak(cloakTitle.value,cloakIconUrl.value,true);toast('Tab appearance saved')}};
+[cloakTitle,cloakIconUrl].forEach(el=>{el.addEventListener('input',()=>{$('#cloak-preset').value='custom';cloakUploadedIcon='';cloakPreview()});el.addEventListener('change',()=>applyTabCloak(cloakTitle.value,cloakIconUrl.value,true))});
 cloakFile.onchange=e=>{
   const f=e.target.files?.[0];if(!f)return;
   if(f.size>512*1024){toast('Favicon must be smaller than 512 KB');e.target.value='';return}
   if(!/^image\/(png|jpeg|gif|svg\+xml|x-icon|vnd\.microsoft\.icon)$/i.test(f.type)&&!/\.ico$/i.test(f.name)){toast('Choose a supported image file');e.target.value='';return}
-  const reader=new FileReader();reader.onload=()=>{cloakUploadedIcon=String(reader.result||'');cloakIconUrl.value='';$('#cloak-preset').value='custom';cloakPreview()};reader.onerror=()=>toast('Could not read that icon file');reader.readAsDataURL(f);
+  const reader=new FileReader();reader.onload=()=>{cloakUploadedIcon=String(reader.result||'');cloakIconUrl.value='';$('#cloak-preset').value='custom';cloakPreview();applyTabCloak(cloakTitle.value,cloakUploadedIcon,true);toast('Custom favicon saved')};reader.onerror=()=>toast('Could not read that icon file');reader.readAsDataURL(f);
 };
 $('#cloak-apply').onclick=()=>{
   const title=(cloakTitle.value||'NERO').trim().slice(0,60)||'NERO';
@@ -76,12 +76,25 @@ $('#cloak-apply').onclick=()=>{
 $('#cloak-reset').onclick=()=>{
   cloakUploadedIcon='';cloakFile.value='';$('#cloak-preset').value='nero';setCloakPreset('nero');applyTabCloak('NERO','',true);toast('Tab appearance reset');
 };
-let savedCloak=null;try{savedCloak=JSON.parse(localStorage.getItem(TAB_CLOAK_KEY)||'null')}catch(e){}
+let savedCloak=null;try{savedCloak=JSON.parse(load(TAB_CLOAK_KEY)||'null')}catch(e){}
 if(savedCloak&&typeof savedCloak.title==='string'&&typeof savedCloak.icon==='string'){
   cloakTitle.value=savedCloak.title;cloakIconUrl.value=savedCloak.icon;applyTabCloak(savedCloak.title,savedCloak.icon,false);
   $('#cloak-preset').value=Object.keys(tabCloakPresets).find(k=>tabCloakPresets[k].title===savedCloak.title&&tabCloakPresets[k].icon===savedCloak.icon)||'custom';
 }else{setCloakPreset('nero')}
 cloakPreview();
+/* Reapply after the browser restores this page from its back/forward cache. */
+function restoreTabCloak(){
+  try{
+    const saved=JSON.parse(load(TAB_CLOAK_KEY)||'null');
+    if(saved&&typeof saved.title==='string'&&typeof saved.icon==='string'){
+      applyTabCloak(saved.title,saved.icon,false);
+      cloakTitle.value=saved.title;cloakIconUrl.value=saved.icon;
+      cloakPreview();
+    }
+  }catch(e){}
+}
+window.addEventListener('pageshow',restoreTabCloak);
+
 function applyMode(m){const r=document.documentElement;if(m==='black')r.removeAttribute('data-mode');else r.dataset.mode=m;$('#mode').value=m;save('fl-mode',m)}
 function applyWall(on){document.documentElement.dataset.wall=on?'on':'off';$('#wall').checked=on;save('fl-wall',on?'1':'0')}
 $('#mode').onchange=e=>applyMode(e.target.value);$('#wall').onchange=e=>applyWall(e.target.checked);
