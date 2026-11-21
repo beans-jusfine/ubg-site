@@ -266,7 +266,7 @@ document.addEventListener('pointerdown',e=>{if(!tabMenu.contains(e.target))hideT
 document.addEventListener('keydown',e=>{if(e.key==='Escape')hideTabMenu()});
 function draw(){const t=cT();show(t.v);Object.entries(navButtons).forEach(([k,b])=>{b.disabled=k!=='home'&&t.v!=='site';b.style.opacity=b.disabled?'.4':'1';b.style.cursor=b.disabled?'default':'pointer'});
 $$('#sites iframe').forEach(f=>f.style.display=f.id==='f'+t.id?'block':'none');
-$('#url').value=t.v==='site'?t.src:'nero://'+t.v;
+$('#url').value=t.v==='site'?t.src:'nero://'+(t.v==='tube'?'movies':t.v);
 const bar=$('#tabs');bar.innerHTML='';
 tabs.forEach(x=>{const b=document.createElement('div');b.className='tab'+(x.id===cur?' on':'');b.setAttribute('role','tab');b.tabIndex=0;
 const s=document.createElement('span');s.textContent=x.title;const k=document.createElement('button');k.innerHTML=ico('close',14);k.setAttribute('aria-label','Close tab');
@@ -287,7 +287,7 @@ frame.go(v);
 f.title=h;draw()}
 function isYoutubeAddress(raw){let value=String(raw||'').trim();if(!value)return false;try{const u=new URL(/^\/\//.test(value)?'https:'+value:/^[a-z][a-z0-9+.-]*:\/\//i.test(value)?value:'https://'+value);const host=u.hostname.toLowerCase().replace(/\.$/,'');return /(^|\.)(youtube\.com|youtube-nocookie\.com|youtu\.be)$/.test(host)}catch(e){return false}}
 function isNeroTubeAddress(raw){try{const u=new URL(/^https?:\/\//i.test(raw)?raw:'https://'+String(raw||'').trim());return /(^|\.)nero-tube\.onrender\.com$/i.test(u.hostname)}catch(e){return false}}
-function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;if(isYoutubeAddress(raw))raw='https://nero-tube.onrender.com';const m=raw.match(/^nero:\/\/(\w+)/);if(m&&names[m[1]])return nav(m[1]);
+function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;if(isYoutubeAddress(raw))raw='https://nero-tube.onrender.com';const m=raw.match(/^nero:\/\/(\w+)/);if(m&&names[m[1]])return nav(m[1]==='movies'?'tube':m[1]);
 const v=norm(raw);
 if(isNeroTubeAddress(v)){siteTab(v);return}
 initProxy().then(()=>siteTab(v)).catch(e=>toast(e.message))}
