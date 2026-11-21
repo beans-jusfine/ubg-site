@@ -124,7 +124,7 @@ renderMemories();saveChats();renderChatList();renderHistory();
 $('#ai-send').onclick=ask;ain.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}};
 
 
-const names={home:'new tab',tube:'Movies',games:'games',ai:'ai',settings:'settings'};
+const names={home:'new tab',tube:'Movies',games:'games',ai:'ai',links:'Link Generator',settings:'settings'};
 let tabs=[],cur=0,nid=0;
 const cT=()=>tabs.find(x=>x.id===cur);
 function newTab(v){v=v||'home';const t={id:++nid,v,src:'',u:'',title:names[v]};tabs.push(t);cur=t.id;draw()}
@@ -157,6 +157,20 @@ function openUrl(raw,inPage){raw=(raw||'').trim();if(!raw)return;if(isYoutubeAdd
 const v=norm(raw);
 if(isNeroTubeAddress(v)){siteTab(v);return}
 initProxy().then(()=>siteTab(v)).catch(e=>toast(e.message))}
+function makeNeroLink(raw){
+ let value=String(raw||'').trim();if(!value)return '';
+ if(!/^https?:\\/\\//i.test(value))value='https://'+value;
+ let destination;try{destination=new URL(value)}catch(e){throw new Error('Enter a valid website URL')}
+ if(!['http:','https:'].includes(destination.protocol))throw new Error('Only HTTP and HTTPS websites are supported');
+ return location.origin+'/?url='+encodeURIComponent(destination.href);
+}
+$('#linkgen-create').onclick=()=>{
+ try{const generated=makeNeroLink($('#linkgen-url').value);if(!generated)throw new Error('Enter a destination URL first');
+ $('#linkgen-output').value=generated;$('#linkgen-result').hidden=false;
+ const host=new URL(/^https?:\\/\\//i.test($('#linkgen-url').value)?$('#linkgen-url').value:'https://'+$('#linkgen-url').value).hostname;
+ $('#linkgen-hint').textContent='Opens '+host+' through NERO proxy.';}catch(error){toast(error.message)}
+};
+$('#linkgen-copy').onclick=async()=>{const value=$('#linkgen-output').value;if(!value)return;try{await navigator.clipboard.writeText(value);toast('NERO link copied!')}catch(error){$('#linkgen-output').select();try{document.execCommand('copy');toast('NERO link copied!')}catch(e){toast('Select and copy the link manually')}}};
 $('#newtab').onclick=()=>newTab();
 $('#ext').onclick=()=>{const t=cT();if(t&&t.u)ext(t.u)};
 $('#url').onfocus=e=>e.target.select();$('#url').onkeydown=e=>{if(e.key==='Enter')openUrl(e.target.value)};
@@ -231,6 +245,7 @@ renderShortcuts();
 // Warm the proxy while the user is on the NERO home screen so the first
 // website does not have to pay the service-worker and Render startup cost.
 initProxy().catch(error=>setProxyStatus('Proxy offline','error',error?.message||'Click to retry the proxy connection'));
+const incomingUrl=new URLSearchParams(location.search).get('url');if(incomingUrl){history.replaceState(null,'',location.pathname+location.hash);openUrl(incomingUrl);}
 
 $('#hs').onkeydown=e=>{const q=e.target.value.trim();if(e.key==='Enter'&&q)openUrl(q,true)};
 
