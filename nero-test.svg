@@ -1,57 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
      xmlns:xhtml="http://www.w3.org/1999/xhtml"
-     width="100%" height="100%" viewBox="0 0 900 520">
-  <title>NERO test downloader</title>
-  <rect width="900" height="520" fill="#050505"/>
-  <foreignObject x="0" y="0" width="900" height="520">
-    <xhtml:div xmlns="http://www.w3.org/1999/xhtml"
-      style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#050505;color:#f5f5f5;font:16px Arial,sans-serif;text-align:center">
-      <xhtml:div style="width:min(90%,520px);padding:32px;box-sizing:border-box;border:1px solid #292929;border-radius:18px;background:#101010">
-        <xhtml:div style="font-size:42px;font-weight:800;letter-spacing:-2px;margin-bottom:12px">NERO</xhtml:div>
-        <xhtml:p style="color:#aaa;line-height:1.5;margin:0 0 24px">Test download: retrieve the live app.html file from Cloudflare Pages and save it to your device.</xhtml:p>
-        <xhtml:button id="download" type="button"
-          style="border:0;border-radius:10px;padding:13px 22px;background:#eee;color:#111;font-size:15px;font-weight:700;cursor:pointer">
-          Download app.html
-        </xhtml:button>
-        <xhtml:p id="status" aria-live="polite" style="min-height:24px;color:#aaa;font-size:13px;margin:18px 0 0">Ready</xhtml:p>
-      </xhtml:div>
+     width="100%" height="100%" version="1.1">
+  <title>NERO test</title>
+  <desc>Fetches NERO app.html and injects the downloaded HTML into an embedded iframe.</desc>
+  <rect x="0" y="0" width="100%" height="100%" fill="#050505"/>
+  <foreignObject x="0" y="0" width="100%" height="100%">
+    <xhtml:div style="display:block;width:100%;height:100%;margin:0;padding:0;overflow:hidden;background:#050505">
+      <xhtml:iframe
+        id="nero-app"
+        title="NERO test"
+        style="display:block;width:100%;height:100%;border:0;background:#050505"
+        allow="autoplay; fullscreen; picture-in-picture; clipboard-read; clipboard-write"
+        allowfullscreen="allowfullscreen"
+        referrerpolicy="strict-origin-when-cross-origin">
+      </xhtml:iframe>
       <xhtml:script><![CDATA[
         (function () {
-          var button = document.getElementById("download");
-          var status = document.getElementById("status");
+          "use strict";
           var endpoint = "https://ubg-site.pages.dev/app.html";
+          var baseUrl = "https://ubg-site.pages.dev/";
+          var frame = document.getElementById("nero-app");
+          var status = document.createElement("div");
+          status.textContent = "Downloading NERO app.html…";
+          status.style.cssText = "position:absolute;left:12px;bottom:12px;padding:8px 12px;background:#171717;color:#ddd;border:1px solid #333;border-radius:8px;font:12px Arial,sans-serif;z-index:10";
+          document.body.appendChild(status);
 
-          button.addEventListener("click", function () {
-            button.disabled = true;
-            button.textContent = "Downloading…";
-            status.textContent = "Fetching app.html from NERO…";
-
-            fetch(endpoint, {
-              method: "GET",
-              mode: "cors",
-              credentials: "omit",
-              cache: "no-store"
-            }).then(function (response) {
-              if (!response.ok) throw new Error("HTTP " + response.status);
-              return response.blob();
-            }).then(function (blob) {
-              var objectUrl = URL.createObjectURL(blob);
-              var link = document.createElement("a");
-              link.href = objectUrl;
-              link.download = "app.html";
-              document.body.appendChild(link);
-              link.click();
-              link.remove();
-              setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 60000);
-              status.textContent = "Download started. Check your Downloads folder.";
-              button.textContent = "Download again";
-              button.disabled = false;
-            }).catch(function (error) {
-              status.textContent = "Download failed: " + (error && error.message ? error.message : "fetch blocked");
-              button.textContent = "Try again";
-              button.disabled = false;
-            });
+          fetch(endpoint, {
+            method: "GET",
+            mode: "cors",
+            credentials: "omit",
+            cache: "no-store"
+          }).then(function (response) {
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            return response.text();
+          }).then(function (html) {
+            if (!html || !html.trim()) throw new Error("Empty app.html");
+            var base = '<base href="' + baseUrl + '">';
+            if (/<head(?:\\s[^>]*)?>/i.test(html)) {
+              html = html.replace(/<head(?:\\s[^>]*)?>/i, function (tag) {
+                return tag + base;
+              });
+            } else {
+              html = '<!doctype html><html><head>' + base +
+                '</head><body>' + html + '</body></html>';
+            }
+            frame.srcdoc = html;
+            status.textContent = "app.html downloaded and injected";
+            setTimeout(function () { status.remove(); }, 4000);
+          }).catch(function (error) {
+            status.textContent = "Could not download app.html: " +
+              (error && error.message ? error.message : "fetch blocked");
           });
         })();
       ]]></xhtml:script>
