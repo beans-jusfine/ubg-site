@@ -9,6 +9,176 @@
   <script src="/config.js" defer></script>
   <script src="/js/pages.js" defer></script>
   <script src="/js/app.js" defer></script>
+  <script>
+  window.addEventListener('DOMContentLoaded', function () {
+    const root = document.documentElement;
+    const settings = document.querySelector('#settings .set');
+    if (!settings || document.getElementById('nero-customization')) return;
+
+    const style = document.createElement('style');
+    style.id = 'nero-customization-styles';
+    style.textContent = [
+      'body{background:var(--nero-wall-color,var(--bg))}',
+      '#wp{background-color:var(--nero-wall-color,var(--bg));filter:blur(var(--wb,8px)) brightness(var(--wall-brightness,.5))}',
+      '#settings .custom-colors[hidden]{display:none}',
+      '#settings .customization-note{margin:7px 0 0;color:var(--mute);font-size:11px;line-height:1.5}',
+      '#settings .custom-color-row{display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end}',
+      '#settings .custom-color-row input[type=color]{width:42px;height:38px}',
+      'body[data-compact="on"] .tab{padding:4px 6px 4px 9px;font-size:12px}',
+      'body[data-compact="on"] .shortcut{min-height:88px;padding:9px 6px}',
+      'body[data-compact="on"] .top{padding-top:5px;padding-bottom:5px}',
+      'body[data-compact="on"] .opt{min-height:70px;padding:10px}',
+      'body[data-sidebar-style="minimal"] .wrap>nav{width:46px;border-right:0;background:transparent}',
+      'body[data-sidebar-style="minimal"] .wrap>nav button{border-radius:8px}',
+      'body[data-sidebar-style="floating"] .wrap>nav{width:58px;margin:9px 0 9px 9px;border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--panel) var(--ui-panel-alpha,100%),transparent);overflow:hidden}',
+      'body[data-sidebar-style="floating"] .wrap>nav button{border-radius:10px}',
+      'body[data-sidebar-style="floating"] .wrap>nav .sp{flex:1}',
+      '.tab,.url,.search,.shortcut,.opt,.memory-panel,.memory-tools,.sf,.chat-sidebar,.msg,.cbar,#settings select,#settings input:not([type=checkbox]):not([type=range]):not([type=color]){border-radius:var(--ui-radius,12px)!important}',
+      '.top,.wrap>nav,#vtabs,.tab.on,.shortcut,.opt,.memory-panel,.memory-tools,.chat-sidebar,.cbar{background-color:color-mix(in srgb,var(--panel) var(--ui-panel-alpha,100%),transparent)}'
+    ].join('\n');
+    document.head.appendChild(style);
+
+    const section = document.createElement('div');
+    section.id = 'nero-customization';
+    section.innerHTML =
+      '<h2>themes</h2>' +
+      '<div class="grp"><div class="gl">Choose a theme</div>' +
+      '<select id="nero-theme" aria-label="NERO theme">' +
+      '<option value="nero">NERO Dark</option><option value="midnight">Midnight</option>' +
+      '<option value="amoled">AMOLED Black</option><option value="light">Light</option>' +
+      '<option value="forest">Forest</option><option value="custom">Custom</option></select>' +
+      '<p class="customization-note">Themes change the browser interface colors. Your accent color setting can still override the theme accent.</p></div>' +
+      '<div class="custom-colors" id="nero-custom-colors" hidden>' +
+      '<div class="row"><div>background color</div><div class="custom-color-row"><input type="color" id="nero-theme-bg" value="#050505"></div></div>' +
+      '<div class="row"><div>panel color</div><div class="custom-color-row"><input type="color" id="nero-theme-panel" value="#0e0e0e"></div></div>' +
+      '<div class="row"><div>text color</div><div class="custom-color-row"><input type="color" id="nero-theme-text" value="#f2f2f2"></div></div>' +
+      '</div>' +
+      '<h2>interface</h2>' +
+      '<div class="row"><div>compact mode<small>Reduce spacing and make controls smaller</small></div><input type="checkbox" id="nero-compact" aria-label="Compact mode"></div>' +
+      '<div class="row"><div>corner roundness<small>Adjust the shape of tabs, cards and controls</small></div><input type="range" id="nero-radius" min="0" max="24" value="12" aria-label="Corner roundness"></div>' +
+      '<div class="row"><div>sidebar style<small>Choose how the navigation rail looks</small></div><select id="nero-sidebar"><option value="standard">Standard</option><option value="minimal">Minimal</option><option value="floating">Floating</option></select></div>' +
+      '<div class="row"><div>panel transparency<small>Make panels more transparent to show the background</small></div><input type="range" id="nero-transparency" min="0" max="45" value="0" aria-label="Panel transparency"></div>' +
+      '<h2>backgrounds</h2>' +
+      '<div class="row"><div>solid background<small>Choose the color behind your wallpaper</small></div><div class="custom-color-row"><input type="color" id="nero-wall-color" value="#050505"><button class="ghost" id="nero-wall-reset" type="button">Reset</button></div></div>' +
+      '<div class="row"><div>wallpaper URL<small>Use an image hosted online (https://)</small></div><div class="ctl"><input id="nero-wall-url" type="url" placeholder="https://example.com/wallpaper.jpg" aria-label="Wallpaper URL"><button class="ghost" id="nero-wall-apply" type="button">Apply</button></div></div>' +
+      '<div class="row"><div>wallpaper brightness<small>Adjust how bright the wallpaper appears</small></div><input type="range" id="nero-wall-brightness" min="20" max="100" value="50" aria-label="Wallpaper brightness"></div>' +
+      '<p class="customization-note">Your existing wallpaper upload and blur controls are still available above. All customization choices save in this browser.</p>';
+
+    const proxyHeading = settings.querySelector('h2');
+    settings.insertBefore(section, proxyHeading || null);
+
+    const themes = {
+      nero: {bg:'#050505',panel:'#0e0e0e',line:'#1f1f1f',text:'#f2f2f2',mute:'#7d7d7d',acc:'#e8e8e8',scheme:'dark'},
+      midnight: {bg:'#080d1a',panel:'#101a2b',line:'#26354c',text:'#eaf0ff',mute:'#8b9bb5',acc:'#8ab4ff',scheme:'dark'},
+      amoled: {bg:'#000000',panel:'#080808',line:'#1c1c1c',text:'#f5f5f5',mute:'#858585',acc:'#ffffff',scheme:'dark'},
+      light: {bg:'#f5f6f8',panel:'#ffffff',line:'#e1e4e8',text:'#20242a',mute:'#707780',acc:'#2563eb',scheme:'light'},
+      forest: {bg:'#07130f',panel:'#0f211a',line:'#244235',text:'#e4f5eb',mute:'#93b3a2',acc:'#4ade80',scheme:'dark'}
+    };
+    const themeSelect = document.getElementById('nero-theme');
+    const customColors = document.getElementById('nero-custom-colors');
+    const colorInputs = {
+      bg: document.getElementById('nero-theme-bg'),
+      panel: document.getElementById('nero-theme-panel'),
+      text: document.getElementById('nero-theme-text')
+    };
+    function persistTheme(name, values) {
+      try { localStorage.setItem('nero.custom.theme', name); if (values) localStorage.setItem('nero.custom.theme.colors', JSON.stringify(values)); } catch (e) {}
+    }
+    function applyTheme(name, values, persist) {
+      const theme = themes[name];
+      customColors.hidden = name !== 'custom';
+      if (theme) values = theme;
+      if (!values) {
+        try { values = JSON.parse(localStorage.getItem('nero.custom.theme.colors') || 'null'); } catch (e) {}
+      }
+      if (name === 'custom' && !values) values = {bg:'#050505',panel:'#0e0e0e',text:'#f2f2f2',line:'#1f1f1f',mute:'#7d7d7d',acc:'#e8e8e8',scheme:'dark'};
+      if (values) {
+        root.style.setProperty('--bg', values.bg);
+        root.style.setProperty('--panel', values.panel);
+        root.style.setProperty('--line', values.line || '#1f1f1f');
+        root.style.setProperty('--text', values.text);
+        root.style.setProperty('--mute', values.mute || '#7d7d7d');
+        root.style.colorScheme = values.scheme || 'dark';
+        if (!localStorage.getItem('fl-acc')) root.style.setProperty('--acc', values.acc || '#e8e8e8');
+        colorInputs.bg.value = values.bg;
+        colorInputs.panel.value = values.panel;
+        colorInputs.text.value = values.text;
+      }
+      themeSelect.value = name;
+      if (persist) persistTheme(name, name === 'custom' ? values : null);
+    }
+    themeSelect.addEventListener('change', function () {
+      const name = themeSelect.value;
+      if (name === 'custom') {
+        let values;
+        try { values = JSON.parse(localStorage.getItem('nero.custom.theme.colors') || 'null'); } catch (e) {}
+        applyTheme(name, values, true);
+      } else applyTheme(name, null, true);
+    });
+    function updateCustomTheme() {
+      const values = {
+        bg: colorInputs.bg.value, panel: colorInputs.panel.value, text: colorInputs.text.value,
+        line: colorInputs.panel.value, mute: colorInputs.text.value, acc: '#e8e8e8', scheme: 'dark'
+      };
+      applyTheme('custom', values, true);
+    }
+    Object.values(colorInputs).forEach(input => input.addEventListener('input', updateCustomTheme));
+    let savedTheme = 'nero';
+    try { savedTheme = localStorage.getItem('nero.custom.theme') || 'nero'; } catch (e) {}
+    applyTheme(themes[savedTheme] ? savedTheme : 'custom', null, false);
+
+    function storeSetting(key, value) { try { localStorage.setItem(key, String(value)); } catch (e) {} }
+    const compact = document.getElementById('nero-compact');
+    const radius = document.getElementById('nero-radius');
+    const sidebar = document.getElementById('nero-sidebar');
+    const transparency = document.getElementById('nero-transparency');
+    function applyCompact(value) { document.body.dataset.compact = value ? 'on' : 'off'; compact.checked = value; storeSetting('nero.ui.compact', value ? '1' : '0'); }
+    function applyRadius(value) { root.style.setProperty('--ui-radius', value + 'px'); radius.value = value; storeSetting('nero.ui.radius', value); }
+    function applySidebar(value) { document.body.dataset.sidebarStyle = value; sidebar.value = value; storeSetting('nero.ui.sidebar', value); }
+    function applyTransparency(value) { root.style.setProperty('--ui-panel-alpha', (100 - value) + '%'); transparency.value = value; storeSetting('nero.ui.transparency', value); }
+    applyCompact(localStorage.getItem('nero.ui.compact') === '1');
+    applyRadius(Math.max(0, Math.min(24, Number(localStorage.getItem('nero.ui.radius') || 12))));
+    applySidebar(['standard','minimal','floating'].includes(localStorage.getItem('nero.ui.sidebar')) ? localStorage.getItem('nero.ui.sidebar') : 'standard');
+    applyTransparency(Math.max(0, Math.min(45, Number(localStorage.getItem('nero.ui.transparency') || 0))));
+    compact.addEventListener('change', function () { applyCompact(compact.checked); });
+    radius.addEventListener('input', function () { applyRadius(Number(radius.value)); });
+    sidebar.addEventListener('change', function () { applySidebar(sidebar.value); });
+    transparency.addEventListener('input', function () { applyTransparency(Number(transparency.value)); });
+
+    const wallColor = document.getElementById('nero-wall-color');
+    const wallUrl = document.getElementById('nero-wall-url');
+    const wallBrightness = document.getElementById('nero-wall-brightness');
+    function applyWallColor(value) {
+      root.style.setProperty('--nero-wall-color', value);
+      wallColor.value = value;
+      storeSetting('nero.wall.color', value);
+    }
+    const savedWallColor = localStorage.getItem('nero.wall.color') || '#050505';
+    applyWallColor(savedWallColor);
+    wallColor.addEventListener('input', function () { applyWallColor(wallColor.value); });
+    document.getElementById('nero-wall-reset').addEventListener('click', function () { applyWallColor('#050505'); });
+    const savedWall = localStorage.getItem('fl-wp') || '';
+    if (/^https?:\/\//i.test(savedWall)) wallUrl.value = savedWall;
+    document.getElementById('nero-wall-apply').addEventListener('click', function () {
+      const value = wallUrl.value.trim();
+      if (!value) { toast('Enter a wallpaper URL first'); return; }
+      try {
+        const url = new URL(value);
+        if (!['http:','https:'].includes(url.protocol)) throw new Error();
+        setWp(url.href);
+        wallUrl.value = url.href;
+        toast('Wallpaper applied');
+      } catch (e) { toast('Enter a valid http(s) image URL'); }
+    });
+    function applyBrightness(value) {
+      root.style.setProperty('--wall-brightness', (value / 100).toFixed(2));
+      wallBrightness.value = value;
+      storeSetting('nero.wall.brightness', value);
+    }
+    applyBrightness(Math.max(20, Math.min(100, Number(localStorage.getItem('nero.wall.brightness') || 50))));
+    wallBrightness.addEventListener('input', function () { applyBrightness(Number(wallBrightness.value)); });
+  });
+  </script>
 </head>
 <body></body>
 </html>
