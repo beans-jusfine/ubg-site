@@ -128,7 +128,7 @@
       const observer=new MutationObserver(()=>{
         const state=proxyButton.dataset.state;
         if(state==='pending')stateView('loading','Connecting to NERO proxy','Waking the proxy and preparing the secure browser session…');
-        else if(state==='error')stateView('error','Proxy connection failed',proxyButton.title||'Check your Wisp server settings and try again.',{label:'Retry connection',run:()=>document.getElementById('wisp-start')?.click()});
+        else if(state==='error')stateView('error','Proxy connection failed',proxyButton.title||'Check your Wisp server settings and try again.');
         else if(state==='ready')clearState();
       });
       observer.observe(proxyButton,{attributes:true,attributeFilter:['data-state']});
