@@ -129,7 +129,6 @@ function wispShow(){$('#wst').textContent='status: '+wispState()}
 $('#wisp').value=load('fl-wisp')||'';
 $('#wisp').onchange=e=>{const v=e.target.value.trim();if(v&&!/^wss:\/\//i.test(v)){e.target.value='';save('fl-wisp','')}else save('fl-wisp',v);wispShow()};
 wispShow();
-$('#wisp-start').onclick=()=>{try{const u=new URL(getWisp());u.protocol='https:';u.pathname='/';u.search='';u.hash='';window.open(u.origin,'_blank','noopener,noreferrer')}catch(e){toast('Enter a valid Wisp server URL first')}};
 window.FERNLIGHT={get wispUrl(){return getWisp()}};
 
 let proxyReady=null,controller=null,EpoxyClientClass=null,proxyStatusEl=null;
