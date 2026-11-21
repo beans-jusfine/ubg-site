@@ -1,7 +1,0 @@
-{
-  "name": "fernlight-site",
-  "private": true,
-  "scripts": {
-    "build": "bash build.sh"
-  }
-}
