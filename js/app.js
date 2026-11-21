@@ -163,6 +163,11 @@ EpoxyClientClass=epoxy.default||epoxy.EpoxyClient;
 if(!EpoxyClientClass)throw new Error('Scramjet 2.x Epoxy transport failed to load');
 controller=new api.Controller({serviceworker,transport:new EpoxyClientClass({wisp:w}),config:{prefix:'/scramjet/',scramjetPath:'/scram/scramjet.js',wasmPath:'/scram/scramjet.wasm',injectPath:'/controller/controller.inject.js'}});
 await controller.wait();
+// Back up the Scramjet cookie jar regularly so proxied logins survive closing NERO.
+const persistCookieJar=()=>{try{const pending=controller?.persistCookies?.();if(pending&&typeof pending.catch==='function')pending.catch(()=>{})}catch(e){}};
+persistCookieJar();
+setInterval(persistCookieJar,5000);
+addEventListener('pagehide',persistCookieJar);
 setInterval(()=>navigator.serviceWorker.controller?.postMessage('keepalive'),15000);
 setProxyStatus('Proxy ready','ready','NERO proxy is connected');
 })();
