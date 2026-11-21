@@ -13,6 +13,75 @@ function initLumin(){if(luminInitialized)return Promise.resolve();if(luminPromis
 
 function save(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function load(k){try{return localStorage.getItem(k)}catch(e){return null}}
+
+/* NERO tab cloaking: changes the browser tab title and favicon for this app page. */
+const TAB_CLOAK_KEY='nero.tabCloak.v1';
+const tabCloakPresets={
+  nero:{title:'NERO',icon:''},
+  classroom:{title:'Google Classroom',icon:'https://www.google.com/s2/favicons?domain=classroom.google.com&sz=64'},
+  docs:{title:'Google Docs',icon:'https://www.google.com/s2/favicons?domain=docs.google.com&sz=64'},
+  drive:{title:'Google Drive',icon:'https://www.google.com/s2/favicons?domain=drive.google.com&sz=64'},
+  calendar:{title:'Google Calendar',icon:'https://www.google.com/s2/favicons?domain=calendar.google.com&sz=64'},
+  canvas:{title:'Canvas',icon:'https://www.google.com/s2/favicons?domain=instructure.com&sz=64'}
+};
+const tabCloakSet=$('#settings .set');
+tabCloakSet.insertAdjacentHTML('beforeend',
+  '<h2>tab cloaking</h2>'+
+  '<div class="grp"><div class="gl">Tab appearance</div>'+
+  '<p class="hint" style="margin:0 0 12px">Change the title and icon shown in this browser tab. This does not change the website address.</p>'+
+  '<div class="row"><div>preset<small>Start with a common tab style</small></div><select id="cloak-preset" aria-label="Tab appearance preset">'+
+  '<option value="nero">NERO (default)</option><option value="classroom">Google Classroom</option><option value="docs">Google Docs</option><option value="drive">Google Drive</option><option value="calendar">Google Calendar</option><option value="canvas">Canvas</option><option value="custom">Custom</option></select></div>'+
+  '<div class="row"><div>custom tab title<small>Any text you want (up to 60 characters)</small></div><input id="cloak-title" class="search" maxlength="60" style="width:min(260px,55%)" placeholder="Enter a tab title" aria-label="Custom tab title"></div>'+
+  '<div class="row"><div>favicon URL<small>Paste an image URL, or upload an icon below</small></div><input id="cloak-icon-url" class="search" style="width:min(260px,55%)" placeholder="https://example.com/icon.png" aria-label="Favicon URL"></div>'+
+  '<div class="row"><div>upload favicon<small>PNG, JPG, GIF, SVG, or ICO image</small></div><input id="cloak-icon-file" type="file" accept="image/png,image/jpeg,image/gif,image/svg+xml,image/x-icon,.ico" aria-label="Upload favicon" style="max-width:210px"></div>'+
+  '<div class="row"><div>preview<small>How the browser tab will be labeled</small></div><div id="cloak-preview" style="display:flex;align-items:center;gap:8px;max-width:220px;overflow:hidden"><img id="cloak-preview-icon" alt="" width="18" height="18" style="object-fit:contain"><span id="cloak-preview-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">NERO</span></div></div>'+
+  '<div class="ctl" style="justify-content:flex-end;margin-top:12px"><button class="ghost" id="cloak-reset" type="button">Reset</button><button class="btn" id="cloak-apply" type="button">Apply tab style</button></div>'+
+  '<p class="memory-note">Custom icons are saved in this browser. Keep uploaded icons reasonably small (under 512 KB).</p></div>'
+);
+const cloakTitle=$('#cloak-title'),cloakIconUrl=$('#cloak-icon-url'),cloakFile=$('#cloak-icon-file');
+let cloakUploadedIcon='';
+const cloakIconLink=(()=>{let l=document.querySelector('link[rel~="icon"]');if(!l){l=document.createElement('link');l.rel='icon';document.head.appendChild(l)}return l})();
+function cloakPreview(){
+  const title=(cloakTitle.value||'NERO').trim().slice(0,60)||'NERO';
+  const icon=cloakUploadedIcon||cloakIconUrl.value.trim();
+  $('#cloak-preview-title').textContent=title;
+  const img=$('#cloak-preview-icon');img.src=icon||'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#111"/><text x="16" y="22" font-size="19" text-anchor="middle" fill="white">N</text></svg>');
+}
+function applyTabCloak(title,icon,persist=true){
+  title=(String(title||'NERO').trim().slice(0,60)||'NERO');
+  document.title=title;
+  if(icon){cloakIconLink.href=icon;cloakIconLink.type=icon.startsWith('data:image/svg+xml')?'image/svg+xml':''}
+  else{cloakIconLink.removeAttribute('href');cloakIconLink.removeAttribute('type')}
+  if(persist){try{localStorage.setItem(TAB_CLOAK_KEY,JSON.stringify({title,icon:icon||''}))}catch(e){toast('Could not save tab style in this browser')}}
+}
+function setCloakPreset(key){
+  const preset=tabCloakPresets[key];if(!preset)return;
+  cloakUploadedIcon='';cloakTitle.value=preset.title;cloakIconUrl.value=preset.icon;cloakFile.value='';cloakPreview();
+}
+$('#cloak-preset').onchange=e=>{if(e.target.value!=='custom')setCloakPreset(e.target.value)};
+[cloakTitle,cloakIconUrl].forEach(el=>el.addEventListener('input',()=>{$('#cloak-preset').value='custom';cloakUploadedIcon='';cloakPreview()}));
+cloakFile.onchange=e=>{
+  const f=e.target.files?.[0];if(!f)return;
+  if(f.size>512*1024){toast('Favicon must be smaller than 512 KB');e.target.value='';return}
+  if(!/^image\/(png|jpeg|gif|svg\+xml|x-icon|vnd\.microsoft\.icon)$/i.test(f.type)&&!/\.ico$/i.test(f.name)){toast('Choose a supported image file');e.target.value='';return}
+  const reader=new FileReader();reader.onload=()=>{cloakUploadedIcon=String(reader.result||'');cloakIconUrl.value='';$('#cloak-preset').value='custom';cloakPreview()};reader.onerror=()=>toast('Could not read that icon file');reader.readAsDataURL(f);
+};
+$('#cloak-apply').onclick=()=>{
+  const title=(cloakTitle.value||'NERO').trim().slice(0,60)||'NERO';
+  const icon=cloakUploadedIcon||cloakIconUrl.value.trim();
+  if(icon&&!/^https?:\/\//i.test(icon)&&!/^data:image\/(png|jpeg|gif|svg\+xml|x-icon|vnd\.microsoft\.icon);/i.test(icon)){toast('Use an http(s) image URL or upload an image');return}
+  if(icon.length>700000){toast('That favicon is too large');return}
+  applyTabCloak(title,icon,true);toast('Tab appearance updated');
+};
+$('#cloak-reset').onclick=()=>{
+  cloakUploadedIcon='';cloakFile.value='';$('#cloak-preset').value='nero';setCloakPreset('nero');applyTabCloak('NERO','',true);toast('Tab appearance reset');
+};
+let savedCloak=null;try{savedCloak=JSON.parse(localStorage.getItem(TAB_CLOAK_KEY)||'null')}catch(e){}
+if(savedCloak&&typeof savedCloak.title==='string'&&typeof savedCloak.icon==='string'){
+  cloakTitle.value=savedCloak.title;cloakIconUrl.value=savedCloak.icon;applyTabCloak(savedCloak.title,savedCloak.icon,false);
+  $('#cloak-preset').value=Object.keys(tabCloakPresets).find(k=>tabCloakPresets[k].title===savedCloak.title&&tabCloakPresets[k].icon===savedCloak.icon)||'custom';
+}else{setCloakPreset('nero')}
+cloakPreview();
 function applyMode(m){const r=document.documentElement;if(m==='black')r.removeAttribute('data-mode');else r.dataset.mode=m;$('#mode').value=m;save('fl-mode',m)}
 function applyWall(on){document.documentElement.dataset.wall=on?'on':'off';$('#wall').checked=on;save('fl-wall',on?'1':'0')}
 $('#mode').onchange=e=>applyMode(e.target.value);$('#wall').onchange=e=>applyWall(e.target.checked);
